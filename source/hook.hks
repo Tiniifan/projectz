@@ -1,0 +1,5 @@
+IE4RegisterSquirrelFunc:
+    type:   branch
+    link:   false
+    addr:   0x00212B1C
+    func:   IE4RegisterSquirrelFunc

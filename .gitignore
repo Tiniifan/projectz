@@ -1,0 +1,14 @@
+/bak/
+/build/
+code.bin
+exheader.bin
+linker.x
+newcode.elf
+newcode.bin
+newcode.sym
+*.idb
+/loader/linker.x
+/loader/loader.bin
+/loader/loader.elf
+/loader/loader.sym
+/loader/build
