@@ -32,6 +32,7 @@ j_sq_vm_malloc = 0x4b4d38;
 j_sq_vm_realloc = 0x4b63e8;
 
 /* sqapi.h */
+sq_newtable = 0x4B5238;
 sq_aux_gettypedarg = 0x12d104;
 sq_arraypop = 0x4B3600;
 sq_bindenv = 0x4B3884;
@@ -123,6 +124,8 @@ SQClass::SQClass = 0x463d90;
 
 /* sqtable.h */
 SQTable::Get = 0x468998;
+SQTable::SQTable = 0x469484;
+SQTable::AllocNodes = 0x468838;
 
 /* sqfuncstate.h */
 SQFuncState::AddLineInfos = 0x1668f0;
@@ -254,8 +257,8 @@ cmndBtlCharaHandle = 0x22f650;
 cmndMessageReplaceVal = 0x22FD18;
 
 /* ie4btl.h */
-rivalPartyOffset = 0x5B0968;
-btlPlayerOffset = 0x5B0B31;
+BTL_RIVAL_PARTY_OFFSET = 0x5B0968;
+BTL_PLAYER_OFFSET = 0x5B0B31;
 getBtlPlayerOffset = 0x28DCC8;
 
 /* ie4save.h */
@@ -264,6 +267,20 @@ saveLocationWrite = 0x16420C;
 /* ie4party.h */
 getPlayerOffset = 0x2fbb40;
 canAddMorePartyMembers = 0x2FDF8C;
+
+/* ie4io.h */
+openSaveDataFile = 0x1641EC;
+writeSaveDataFile = 0x16420C;
+SAVE_DATA_OFFSET = 0x5C4EE8;
+initSaveFileHandle = 0x52B9E0;
+closeSaveFileHandle = 0x53CFA8;
+
+/* ie4std.h */
+allocatorAlloc = 0x51F98C;
+allocatorFree = 0x507E48;
+
+/* crc32.h */
+getCrc32 = 0x50619C;
 
 /* main.c */
 main = 0x100000;

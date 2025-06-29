@@ -22,6 +22,7 @@ SQUIRREL_API void sq_pop(HSQUIRRELVM v,SQInteger nelemstopop);
 SQUIRREL_API SQInteger sq_gettop(HSQUIRRELVM v);
 
 /* Object Creation and Pushing */
+SQUIRREL_API void sq_newtable(HSQUIRRELVM v);
 SQUIRREL_API void sq_pushstring(HSQUIRRELVM v,const SQChar *s,SQInteger len);
 SQUIRREL_API void sq_pushfloat(HSQUIRRELVM v,SQFloat n);
 SQUIRREL_API void sq_pushinteger(HSQUIRRELVM v,SQInteger n);

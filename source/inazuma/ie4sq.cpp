@@ -1,5 +1,7 @@
 #include "../inazuma/ie4sq.h"
 #include "../inazuma/squirrel/memory_manager.h"
+#include "../inazuma/squirrel/btl_manager.h"
+#include "../inazuma/squirrel/save_manager.h"
 #include "../squirrel-2.2.3/squirrel/squirrel.h"
 
 HSQUIRRELVM IE4RegisterSquirrelFunc(int gameContext, HSQUIRRELVM squirrelVM) {
@@ -391,9 +393,15 @@ HSQUIRRELVM IE4RegisterSquirrelFunc(int gameContext, HSQUIRRELVM squirrelVM) {
         register_global_func(vm, "SYS_EVENT_STEP", 0x218490);
         register_global_func(vm, "SYS_CACHE_CLEAR", 0x21991C);
 		
-		// Added functions
+		// Insert your custom functions from here
         register_global_func(vm, "CMND_MEMORY_READ", (int)cmndMemoryRead);
-		//register_global_func(vm, "CMND_MEMORY_WRITE", (int)cmndMemoryWrite);		
+		register_global_func(vm, "CMND_MEMORY_WRITE", (int)cmndMemoryWrite);
+        register_global_func(vm, "CMND_GET_RIVALPARTY_HANDLE", (int)cmndGetRivalPartyHandle);
+        register_global_func(vm, "CMND_GET_BTL_PLAYER", (int)cmndGetBtlPlayer);
+        register_global_func(vm, "CMND_GET_BTL_PLAYER_INFO", (int)cmndGetBtlPlayerInfo);	
+        register_global_func(vm, "CMND_OPEN_SAVE_DATA_FILE", (int)cmndOpenSaveDataFile);
+        register_global_func(vm, "CMND_WRITE_SAVE_DATA_FILE", (int)cmndWriteSaveDataFile);	
+        register_global_func(vm, "CMND_CLOSE_SAVE_DATA_FILE", (int)cmndCloseSaveDataFile);	
 	}
 	
     return vm;
