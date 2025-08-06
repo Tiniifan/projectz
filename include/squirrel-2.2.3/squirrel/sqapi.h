@@ -47,6 +47,9 @@ SQUIRREL_API SQRESULT sq_getclass(HSQUIRRELVM v,SQInteger idx);
 SQUIRREL_API SQRESULT sq_call(HSQUIRRELVM v,SQInteger params,SQBool retval,SQBool raiseerror);
 SQUIRREL_API SQRESULT sq_throwerror(HSQUIRRELVM v,const SQChar *err);
 
+/*raw object handling*/
+SQUIRREL_API void sq_pushobject(HSQUIRRELVM v,HSQOBJECT obj);
+
 /* Table and Slot Operations */
 SQUIRREL_API SQRESULT sq_rawset(HSQUIRRELVM v,SQInteger idx);
 SQUIRREL_API SQRESULT sq_rawget(HSQUIRRELVM v,SQInteger idx);

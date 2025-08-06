@@ -61,6 +61,7 @@ sq_pushnull = 0x4b5998;
 sq_pushroottable = 0x4b5a0c;
 sq_pushstring = 0x4b5a14;
 sq_pushuserpointer = 0x4B5AB0;
+sq_pushobject = 0x4B59A4;
 sq_rawget = 0x4b5c44;
 sq_rawset = 0x4B5F6C;
 sq_rawset = 0x4b5f6c;
@@ -72,6 +73,7 @@ sq_setparamscheck = 0x4b6b28;
 sq_throwerror = 0x4b6fb0;
 sq_tostring = 0x4B7038;
 sq_wakeupvm = 0x4b70d8;
+sq_get = 0x4B44AC;
 
 /* sql5.h */
 sq_pushnull_L5 = 0x19efe4;
@@ -107,12 +109,15 @@ SQVM::CLASS_OP = 0x45CBC0;
 SQVM::CLASS_OP = 0x45CBC0;
 SQVM::ToString = 0x45D250;
 SQVM::SQVM = 0x45db3c;
+SQVM::Get = 0x45760C;
+SQVM::FallBackGet = 0x4565CC;
 
 /* sqcompiler.h */
 SQCompiler::Error = 0x100a64;
 SQCompiler::Expression = 0x15a614;
 SQCompiler::PrefixedExpr = 0x15b0a8;
 SQCompiler::Statement = 0x15e2b8;
+SQCompiler::CreateFunction = 15BC00;
 
 /* sqlexer.h */
 SQLexer::ReadString = 0x464b5c;
@@ -130,6 +135,9 @@ SQTable::AllocNodes = 0x468838;
 /* sqfuncstate.h */
 SQFuncState::AddLineInfos = 0x1668f0;
 SQFuncState::AddInstruction = 0x167438;
+SQFuncState::PopChildState = 0x1673F8;
+SQFuncState::SQFuncState = 0x167E74;
+SQFuncState::CreateString = 0x166A50;
 
 /* sqstate.h */
 SQSharedState::Init = 0x19a9ec;
@@ -255,6 +263,7 @@ cmndDeleteGuestChara = 0x22d6a0;
 cmndIsEquipmentManip = 0x22dd7c;
 cmndBtlCharaHandle = 0x22f650;
 cmndMessageReplaceVal = 0x22FD18;
+cmndBtlForgetSkill = 0x224214;
 
 /* ie4btl.h */
 BTL_RIVAL_PARTY_OFFSET = 0x5B0968;

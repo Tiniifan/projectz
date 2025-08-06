@@ -53,6 +53,9 @@ SQInteger cmndGetBtlPlayer(HSQUIRRELVM v);
  */
 SQInteger cmndGetBtlPlayerInfo(HSQUIRRELVM v);
 
+
+SQInteger cmndTrainRivalPlayer(HSQUIRRELVM v);
+
 #ifdef __cplusplus
 }
 #endif

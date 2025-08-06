@@ -401,7 +401,8 @@ HSQUIRRELVM IE4RegisterSquirrelFunc(int gameContext, HSQUIRRELVM squirrelVM) {
         register_global_func(vm, "CMND_GET_BTL_PLAYER_INFO", (int)cmndGetBtlPlayerInfo);	
         register_global_func(vm, "CMND_OPEN_SAVE_DATA_FILE", (int)cmndOpenSaveDataFile);
         register_global_func(vm, "CMND_WRITE_SAVE_DATA_FILE", (int)cmndWriteSaveDataFile);	
-        register_global_func(vm, "CMND_CLOSE_SAVE_DATA_FILE", (int)cmndCloseSaveDataFile);	
+        register_global_func(vm, "CMND_CLOSE_SAVE_DATA_FILE", (int)cmndCloseSaveDataFile);
+        register_global_func(vm, "CMND_TRAIN_RIVAL_PLAYER", (int)cmndTrainRivalPlayer);	
 	}
 	
     return vm;
