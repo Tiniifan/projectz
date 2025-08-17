@@ -117,7 +117,7 @@ SQCompiler::Error = 0x100a64;
 SQCompiler::Expression = 0x15a614;
 SQCompiler::PrefixedExpr = 0x15b0a8;
 SQCompiler::Statement = 0x15e2b8;
-SQCompiler::CreateFunction = 15BC00;
+SQCompiler::CreateFunction = 0x15BC00;
 
 /* sqlexer.h */
 SQLexer::ReadString = 0x464b5c;

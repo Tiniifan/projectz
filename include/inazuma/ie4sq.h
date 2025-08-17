@@ -15,7 +15,7 @@ int register_global_func(HSQUIRRELVM v, const char *fname, int adress);
 HSQUIRRELVM IE4RegisterSquirrelFunc(int gameContext, HSQUIRRELVM squirrelVM);
 HSQUIRRELVM getSquirrelVM(HSQUIRRELVM v);
 
-// Fonctions natives (commandes et systèmes)
+// Native functions
 SQInteger cmndRandom(HSQUIRRELVM v);
 SQInteger cmndSetLv(HSQUIRRELVM v);
 SQInteger cmndGetHash(HSQUIRRELVM v);
