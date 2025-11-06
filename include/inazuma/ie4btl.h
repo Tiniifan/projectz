@@ -20,6 +20,12 @@ extern "C" {
 #define BTL_RIVAL_PARTY_OFFSET 0x5B0968
 
 /**
+ * @brief Memory offset for btl chara handle data
+ * @details Base memory address where model (chara handle) is used during a soccer battle
+ */
+#define BTLCHARA_Handle_OFFSET 0x5B0998
+
+/**
  * @brief Retrieves battle player data offset based on team and hash
  * @param basePtr Base pointer to memory location
  * @param team Team identifier (0 = player team, 1 = rival team)
@@ -28,6 +34,25 @@ extern "C" {
  * @note Returns NULL if player not found or invalid parameters
  */
 uint32_t* getBtlPlayerOffset(int* basePtr, int team, uint32_t hash);
+
+/**
+ * @brief Retrieves btl chara handle data offset based on id of the character
+ * @param base Base (this memory address is already assigned to the team)
+ * @param hash Hash value for player identification
+ * @param unkArgument Unknown argument, but it's always 0
+ * @return uint32_t* Pointer to the btl chara handle data offset
+ * @note Returns 0 if player not found or invalid parameters
+ */
+int getBtlCharaHandleOffsetByID(int base, uint32_t hash, int unkArgument);
+
+/**
+ * @brief Retrieves btl chara handle data offset based on the number of the character
+ * @param base Base (this memory address is already assigned to the team)
+ * @param playerNumber The position of the player in the formation (like 0 = the goalkeeper)
+ * @return uint32_t* Pointer to the btl chara handle data offset
+ * @note Returns 0 if player not found or invalid parameters
+ */
+int getBtlCharaHandleOffsetByNumber(int base, int playerNumber);
 
 /**
  * @brief Structure representing a battle player with all combat-related data

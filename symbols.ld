@@ -268,7 +268,10 @@ cmndBtlForgetSkill = 0x224214;
 /* ie4btl.h */
 BTL_RIVAL_PARTY_OFFSET = 0x5B0968;
 BTL_PLAYER_OFFSET = 0x5B0B31;
+BTLCHARA_Handle_OFFSET = 0x5B0998;
 getBtlPlayerOffset = 0x28DCC8;
+getBtlCharaHandleOffsetByID = 0x3A9C04;
+getBtlCharaHandleOffsetByNumber = 0x3A9DD8;
 
 /* ie4save.h */
 saveLocationWrite = 0x16420C;

@@ -56,6 +56,15 @@ SQInteger cmndGetBtlPlayerInfo(HSQUIRRELVM v);
 
 SQInteger cmndTrainRivalPlayer(HSQUIRRELVM v);
 
+
+SQInteger cmndBtlGetUniform(HSQUIRRELVM v);
+
+
+SQInteger cmndBtlGetUniformNum(HSQUIRRELVM v);
+
+
+SQInteger cmndBtlIsAwayKit(HSQUIRRELVM v);
+
 #ifdef __cplusplus
 }
 #endif

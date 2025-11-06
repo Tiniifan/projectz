@@ -458,3 +458,223 @@ SQInteger cmndTrainRivalPlayer(HSQUIRRELVM v) {
     sq_pushbool(v, SQTrue);
     return 1;
 }
+
+SQInteger cmndBtlGetUniform(HSQUIRRELVM v) {
+    // Check if we have the required parameters (team + player identifier)
+    if (sq_gettop(v) < 3) {
+        sq_pushnull(v);
+        return 1;
+    }
+
+    // Get team parameter
+    SQInteger team;
+    if (SQ_FAILED(sq_getinteger(v, 2, &team))) {
+        sq_pushnull(v);
+        return 1;
+    }
+
+    // Check if BTLCHARA_Handle_OFFSET is valid
+    if (!BTLCHARA_Handle_OFFSET) {
+        sq_pushnull(v);
+        return 1;
+    }
+
+    // Calculate base offset for team
+    int base = *reinterpret_cast<int*>(BTLCHARA_Handle_OFFSET);
+    int value = *reinterpret_cast<int*>(reinterpret_cast<char*>(base) + 0x10);
+    int teamBase = value + 392 * team;
+    int targetOffset = -1;
+
+    // Check parameter type (string or integer)
+    SQObjectType paramType = sq_gettype(v, 3);
+    
+    if (paramType == OT_STRING) {
+        // Search by playerID hash
+        const SQChar* playerID;
+        if (SQ_FAILED(sq_getstring(v, 3, &playerID))) {
+            sq_pushnull(v);
+            return 1;
+        }
+        
+        // Calculate hash and get offset
+        int playerHash = getCrc32(reinterpret_cast<uint8_t*>(const_cast<char*>(playerID)), 0, 0);
+        targetOffset = getBtlCharaHandleOffsetByID(teamBase, playerHash, 0);
+    } else if (paramType == OT_INTEGER) {
+        // Search by player index
+        SQInteger playerIndex;
+        if (SQ_FAILED(sq_getinteger(v, 3, &playerIndex))) {
+            sq_pushnull(v);
+            return 1;
+        }
+        
+        targetOffset = getBtlCharaHandleOffsetByNumber(teamBase, (int)playerIndex);
+    }
+
+    // Return uniform number (removing the +2 offset if present) or null
+    if (targetOffset) {
+        // Check if the value at targetOffset + 4 is 0
+        if (*reinterpret_cast<int*>(targetOffset + 4) == 0) {
+            sq_pushnull(v);
+            return 1;
+        }
+
+        int uniformData = *reinterpret_cast<int*>(targetOffset + 8);
+        int uniformNumber = uniformData / 1000;
+        
+        // Check if we need to remove the +2 offset
+        if (uniformNumber * 1000 != uniformData) {
+            uniformNumber = (uniformData - 2) / 1000;
+        }
+        
+        sq_pushinteger(v, uniformNumber);
+        return 1;
+    } else {
+        sq_pushnull(v);
+        return 1;
+    }
+}
+
+SQInteger cmndBtlGetUniformNum(HSQUIRRELVM v) {
+    // Check if we have the required parameters (team + player identifier)
+    if (sq_gettop(v) < 3) {
+        sq_pushnull(v);
+        return 1;
+    }
+
+    // Get team parameter
+    SQInteger team;
+    if (SQ_FAILED(sq_getinteger(v, 2, &team))) {
+        sq_pushnull(v);
+        return 1;
+    }
+
+    // Check if BTLCHARA_Handle_OFFSET is valid
+    if (!BTLCHARA_Handle_OFFSET) {
+        sq_pushnull(v);
+        return 1;
+    }
+
+    // Calculate base offset for team
+    int base = *reinterpret_cast<int*>(BTLCHARA_Handle_OFFSET);
+    int value = *reinterpret_cast<int*>(reinterpret_cast<char*>(base) + 0x10);
+    int teamBase = value + 392 * team;
+    int targetOffset = -1;
+
+    // Check parameter type (string or integer)
+    SQObjectType paramType = sq_gettype(v, 3);
+    
+    if (paramType == OT_STRING) {
+        // Search by playerID hash
+        const SQChar* playerID;
+        if (SQ_FAILED(sq_getstring(v, 3, &playerID))) {
+            sq_pushnull(v);
+            return 1;
+        }
+        
+        // Calculate hash and get offset
+        int playerHash = getCrc32(reinterpret_cast<uint8_t*>(const_cast<char*>(playerID)), 0, 0);
+        targetOffset = getBtlCharaHandleOffsetByID(teamBase, playerHash, 0);
+    } else if (paramType == OT_INTEGER) {
+        // Search by player index
+        SQInteger playerIndex;
+        if (SQ_FAILED(sq_getinteger(v, 3, &playerIndex))) {
+            sq_pushnull(v);
+            return 1;
+        }
+        
+        targetOffset = getBtlCharaHandleOffsetByNumber(teamBase, (int)playerIndex);
+    }
+
+    // Return kit number or null
+    if (targetOffset) {
+        // Check if the value at targetOffset + 4 is 0
+        if (*reinterpret_cast<int*>(targetOffset + 4) == 0) {
+            sq_pushnull(v);
+            return 1;
+        }
+
+        uint8_t kitNumber = *reinterpret_cast<uint8_t*>(targetOffset + 18);
+        sq_pushinteger(v, static_cast<SQInteger>(kitNumber));
+        return 1;
+    } else {
+        sq_pushnull(v);
+        return 1;
+    }
+}
+
+SQInteger cmndBtlIsAwayKit(HSQUIRRELVM v) {
+    // Check if we have the required parameters (team + player identifier)
+    if (sq_gettop(v) < 3) {
+        sq_pushnull(v);
+        return 1;
+    }
+
+    // Get team parameter
+    SQInteger team;
+    if (SQ_FAILED(sq_getinteger(v, 2, &team))) {
+        sq_pushnull(v);
+        return 1;
+    }
+
+    // Check if BTLCHARA_Handle_OFFSET is valid
+    if (!BTLCHARA_Handle_OFFSET) {
+        sq_pushnull(v);
+        return 1;
+    }
+
+    // Calculate base offset for team
+    int base = *reinterpret_cast<int*>(BTLCHARA_Handle_OFFSET);
+    int value = *reinterpret_cast<int*>(reinterpret_cast<char*>(base) + 0x10);
+    int teamBase = value + 392 * team;
+    int targetOffset = -1;
+
+    // Check parameter type (string or integer)
+    SQObjectType paramType = sq_gettype(v, 3);
+    
+    if (paramType == OT_STRING) {
+        // Search by playerID hash
+        const SQChar* playerID;
+        if (SQ_FAILED(sq_getstring(v, 3, &playerID))) {
+            sq_pushnull(v);
+            return 1;
+        }
+        
+        // Calculate hash and get offset
+        int playerHash = getCrc32(reinterpret_cast<uint8_t*>(const_cast<char*>(playerID)), 0, 0);
+        targetOffset = getBtlCharaHandleOffsetByID(teamBase, playerHash, 0);
+    } else if (paramType == OT_INTEGER) {
+        // Search by player index
+        SQInteger playerIndex;
+        if (SQ_FAILED(sq_getinteger(v, 3, &playerIndex))) {
+            sq_pushnull(v);
+            return 1;
+        }
+        
+        targetOffset = getBtlCharaHandleOffsetByNumber(teamBase, (int)playerIndex);
+    }
+
+    // Return true if away kit (outdoor), false if home kit (indoor), null if player not found
+    if (targetOffset) {
+        // Check if the value at targetOffset + 4 is 0
+        if (*reinterpret_cast<int*>(targetOffset + 4) == 0) {
+            sq_pushnull(v);
+            return 1;
+        }
+
+        int uniformData = *reinterpret_cast<int*>(reinterpret_cast<int>(targetOffset) + 8);
+        int uniformNumber = uniformData / 1000;
+        
+        // Check if uniform data has the +2 offset (indoor/home kit)
+        // If uniformNumber * 1000 == uniformData, it's home kit (no +2)
+        // Otherwise it's away kit (has +2)
+        if (uniformNumber * 1000 == uniformData) {
+            sq_pushbool(v, SQFalse);  // Away kit (outdoor)
+        } else {
+            sq_pushbool(v, SQTrue); // Home kit (indoor)
+        }
+        return 1;
+    } else {
+        sq_pushnull(v);
+        return 1;
+    }
+}
