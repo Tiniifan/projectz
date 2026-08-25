@@ -6,7 +6,7 @@ extern "C" {
 
 typedef unsigned int    size_t;
 
-// void* memcpy(void* dest, const void* src, size_t num);
+void* safeMemcpy(void* dest, const void* src, size_t num);
 // void* memclr(void* ptr, size_t num);
 unsigned char* safeMemset(unsigned char *result, unsigned int a2);
 

@@ -269,6 +269,7 @@ cmndBtlForgetSkill = 0x224214;
 BTL_RIVAL_PARTY_OFFSET = 0x5B0968;
 BTL_PLAYER_OFFSET = 0x5B0B31;
 BTLCHARA_Handle_OFFSET = 0x5B0998;
+BTL_TEAM_MANAGER_OFFSET = 0x5B0990;
 getBtlPlayerOffset = 0x28DCC8;
 getBtlCharaHandleOffsetByID = 0x3A9C04;
 getBtlCharaHandleOffsetByNumber = 0x3A9DD8;

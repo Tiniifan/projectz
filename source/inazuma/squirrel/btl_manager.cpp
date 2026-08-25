@@ -678,3 +678,211 @@ SQInteger cmndBtlIsAwayKit(HSQUIRRELVM v) {
         return 1;
     }
 }
+
+__attribute__((optimize("no-tree-loop-distribute-patterns")))
+SQInteger cmndBtlRemoveMember(HSQUIRRELVM v) {
+    // Check if we have the required parameters (team + player identifier)
+    if (sq_gettop(v) < 3) {
+        sq_pushbool(v, SQFalse);
+        return 1;
+    }
+
+    // Get team parameter (0 = player's team, 1 = rival team)
+    SQInteger team;
+    if (SQ_FAILED(sq_getinteger(v, 2, &team)) || team < 0 || team > 1) {
+        sq_pushbool(v, SQFalse);
+        return 1;
+    }
+
+    // Get team manager base pointer from RAM
+    int teamManagerPtr = *reinterpret_cast<int*>(BTL_TEAM_MANAGER_OFFSET);
+    if (!teamManagerPtr) {
+        sq_pushbool(v, SQFalse);
+        return 1;
+    }
+    // Resolve container pointer for team data
+    uint8_t* container = reinterpret_cast<uint8_t*>(*reinterpret_cast<int*>(teamManagerPtr + 0x10));
+    if (!container) {
+        sq_pushbool(v, SQFalse);
+        return 1;
+    }
+
+    // Get player count for the requested team
+    int32_t* countPtr = reinterpret_cast<int32_t*>(container + BTL_COUNT_BASE + 4 * team);
+    int32_t count = *countPtr;
+    if (count <= 0 || count > MAX_PLAYERS) {
+        sq_pushbool(v, SQFalse);
+        return 1;
+    }
+
+    // Base address of player slots for this team
+    uint8_t* teamPlayers = container + BTL_PLAYERS_BASE + BTL_TEAM_STRIDE * team;
+
+    int targetIndex = -1;
+    // Check identifier type (string or integer)
+    SQObjectType paramType = sq_gettype(v, 3);
+
+    if (paramType == OT_STRING) {
+        // Search by player ID hash
+        const SQChar* playerID;
+        if (SQ_FAILED(sq_getstring(v, 3, &playerID))) {
+            sq_pushbool(v, SQFalse);
+            return 1;
+        }
+        int hash = getCrc32(reinterpret_cast<uint8_t*>(const_cast<char*>(playerID)), 0, 0);
+        for (int i = 0; i < count; i++) {
+            int32_t slotHash = *reinterpret_cast<int32_t*>(teamPlayers + BTL_SLOT_SIZE * i);
+            if (slotHash == hash) {
+                targetIndex = i;
+                break;
+            }
+        }
+    } else if (paramType == OT_INTEGER) {
+        // Search by player index (position in formation)
+        SQInteger pos;
+        if (SQ_FAILED(sq_getinteger(v, 3, &pos))) {
+            sq_pushbool(v, SQFalse);
+            return 1;
+        }
+        if (pos >= 0 && pos < count) {
+            targetIndex = static_cast<int>(pos);
+        }
+    } else {
+        sq_pushbool(v, SQFalse);
+        return 1;
+    }
+
+    // Player not found
+    if (targetIndex == -1) {
+        sq_pushbool(v, SQFalse);
+        return 1;
+    }
+
+    // Shift subsequent players left to fill the gap
+    for (int i = targetIndex; i < count - 1; i++) {
+        uint32_t* dest = reinterpret_cast<uint32_t*>(teamPlayers + BTL_SLOT_SIZE * i);
+        uint32_t* src  = reinterpret_cast<uint32_t*>(teamPlayers + BTL_SLOT_SIZE * (i + 1));
+        for (int j = 0; j < BTL_SLOT_SIZE / 4; j++) {
+            dest[j] = src[j];
+        }
+    }
+
+    // Clear the now-duplicated last slot
+    uint8_t* lastSlot = teamPlayers + BTL_SLOT_SIZE * (count - 1);
+    for (int j = 0; j < BTL_SLOT_SIZE; j++) {
+        lastSlot[j] = 0;
+    }
+
+    // Decrement player count
+    *countPtr = count - 1;
+
+    sq_pushbool(v, SQTrue);
+    return 1;
+}
+
+__attribute__((optimize("no-tree-loop-distribute-patterns")))
+SQInteger cmndBtlGetTeamPlayerCount(HSQUIRRELVM v) {
+    // Check if we have the required parameter (team)
+    if (sq_gettop(v) < 2) {
+        sq_pushnull(v);
+        return 1;
+    }
+
+    // Get team parameter (0 = player's team, 1 = rival team)
+    SQInteger team;
+    if (SQ_FAILED(sq_getinteger(v, 2, &team)) || team < 0 || team > 1) {
+        sq_pushnull(v);
+        return 1;
+    }
+
+    // Get team manager base pointer from RAM
+    int teamManagerPtr = *reinterpret_cast<int*>(BTL_TEAM_MANAGER_OFFSET);
+    if (!teamManagerPtr) {
+        sq_pushnull(v);
+        return 1;
+    }
+
+    // Resolve container pointer for team data
+    uint8_t* container = reinterpret_cast<uint8_t*>(*reinterpret_cast<int*>(teamManagerPtr + 0x10));
+    if (!container) {
+        sq_pushnull(v);
+        return 1;
+    }
+
+    // Get player count for the requested team
+    int32_t* countPtr = reinterpret_cast<int32_t*>(container + BTL_COUNT_BASE + 4 * team);
+    int32_t count = *countPtr;
+
+    // Validate count bounds
+    if (count < 0 || count > MAX_PLAYERS) {
+        sq_pushnull(v);
+        return 1;
+    }
+
+    // Return the player count
+    sq_pushinteger(v, count);
+    return 1;
+}
+
+__attribute__((optimize("no-tree-loop-distribute-patterns")))
+SQInteger cmndBtlClearPlayersFromTeam(HSQUIRRELVM v) {
+    // Check if we have the required parameter (team)
+    if (sq_gettop(v) < 2) {
+        sq_pushbool(v, SQFalse);
+        return 1;
+    }
+
+    // Get team parameter (0 = player's team, 1 = rival team)
+    SQInteger team;
+    if (SQ_FAILED(sq_getinteger(v, 2, &team)) || team < 0 || team > 1) {
+        sq_pushbool(v, SQFalse);
+        return 1;
+    }
+
+    // Get team manager base pointer from RAM
+    int teamManagerPtr = *reinterpret_cast<int*>(BTL_TEAM_MANAGER_OFFSET);
+    if (!teamManagerPtr) {
+        sq_pushbool(v, SQFalse);
+        return 1;
+    }
+
+    // Resolve container pointer for team data
+    uint8_t* container = reinterpret_cast<uint8_t*>(*reinterpret_cast<int*>(teamManagerPtr + 0x10));
+    if (!container) {
+        sq_pushbool(v, SQFalse);
+        return 1;
+    }
+
+    // Get player count for the requested team
+    int32_t* countPtr = reinterpret_cast<int32_t*>(container + BTL_COUNT_BASE + 4 * team);
+    int32_t count = *countPtr;
+
+    // Validate count bounds
+    if (count < 0 || count > MAX_PLAYERS) {
+        sq_pushbool(v, SQFalse);
+        return 1;
+    }
+
+    // Team already empty
+    if (count == 0) {
+        sq_pushbool(v, SQTrue);
+        return 1;
+    }
+
+    // Base address of player slots for this team
+    uint8_t* teamPlayers = container + BTL_PLAYERS_BASE + BTL_TEAM_STRIDE * team;
+
+    // Clear all occupied player slots (manual loop to avoid memset dependency)
+    for (int i = 0; i < count; i++) {
+        uint8_t* slot = teamPlayers + BTL_SLOT_SIZE * i;
+        for (int j = 0; j < BTL_SLOT_SIZE; j++) {
+            slot[j] = 0;
+        }
+    }
+
+    // Reset player count to zero
+    *countPtr = 0;
+
+    sq_pushbool(v, SQTrue);
+    return 1;
+}

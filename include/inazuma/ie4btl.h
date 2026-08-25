@@ -26,6 +26,12 @@ extern "C" {
 #define BTLCHARA_Handle_OFFSET 0x5B0998
 
 /**
+ * @brief Memory offset for battle team manager data
+ * @details Base memory address where team management structures (player slots, player counts) are stored during a soccer battle
+ */
+#define BTL_TEAM_MANAGER_OFFSET 0x5B0990
+
+/**
  * @brief Retrieves battle player data offset based on team and hash
  * @param basePtr Base pointer to memory location
  * @param team Team identifier (0 = player team, 1 = rival team)
