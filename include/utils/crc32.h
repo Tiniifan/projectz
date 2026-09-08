@@ -24,6 +24,18 @@ extern "C" {
  */
 int getCrc32(uint8_t* data, int unk1, int unk2);
 
+/**
+ * @brief Calculate CRC32 checksum over a fixed length buffer
+ * @param data Pointer to the data buffer to calculate CRC32 for
+ * @param size Number of bytes to checksum
+ * @return unsigned int Standard zlib CRC32 of the buffer, or 0 if data is null
+ * or size is 0
+ * @note Unlike getCrc32, which stops at the first null byte, this one honours
+ * `size`. This is the variant used to protect .ie4 save files
+ * @warning The checksum stored in a save file covers the *encrypted* payload
+ */
+unsigned int getCrc32Buffer(uint8_t* data, int size);
+
 #ifdef __cplusplus
 }
 #endif

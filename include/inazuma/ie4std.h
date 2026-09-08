@@ -33,6 +33,30 @@ int allocatorAlloc(int context, int unk1, unsigned int size, unsigned int unk2);
  */
 int allocatorFree(int *context, unsigned int allocator, int unk1);
 
+/**
+ * @brief Draws the next value from the game's global xorshift128 RNG
+ * @param modulo Upper bound of the returned value, or 0 for the raw 32 bit state
+ * @return int The new RNG state, reduced modulo `modulo` when it is non zero
+ * @note This is the RNG the save cipher draws its seed from
+ * @warning Every call advances the global state, which is shared with the rest
+ * of the game
+ */
+int getRandomNumber(unsigned int modulo);
+
+/**
+ * @brief Acquires the game's global allocator lock
+ * @note The lock is re-entrant: the game itself nests acquisitions, for example
+ * around the save file encryption
+ * @warning Every call must be paired with an unlockAllocator
+ */
+void lockAllocator(void);
+
+/**
+ * @brief Releases the game's global allocator lock
+ * @warning Only call this after a matching lockAllocator
+ */
+void unlockAllocator(void);
+
 #ifdef __cplusplus
 }
 #endif

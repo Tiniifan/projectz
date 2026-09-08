@@ -204,6 +204,7 @@ VX2_Free = 0x1571e0;
 
 /* crc32.h */
 getCrc32 = 0x50619C;
+getCrc32Buffer = 0x53514C;
 crc32_table = 0x5737f4;
 
 /* language */
@@ -291,6 +292,9 @@ closeSaveFileHandle = 0x53CFA8;
 /* ie4std.h */
 allocatorAlloc = 0x51F98C;
 allocatorFree = 0x507E48;
+getRandomNumber = 0x50670C;
+lockAllocator = 0x506100;
+unlockAllocator = 0x5062B0;
 
 /* crc32.h */
 getCrc32 = 0x50619C;

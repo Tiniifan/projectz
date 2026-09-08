@@ -3,3 +3,15 @@ IE4RegisterSquirrelFunc:
     link:   false
     addr:   0x00212B1C
     func:   IE4RegisterSquirrelFunc
+
+IE4SaveDecrypt:
+    type:   branch
+    link:   false
+    addr:   0x0033EFDC
+    func:   ie4SaveDecrypt
+
+IE4SaveEncrypt:
+    type:   branch
+    link:   false
+    addr:   0x0033F098
+    func:   ie4SaveEncrypt
