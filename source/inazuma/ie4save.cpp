@@ -116,28 +116,41 @@ void saveCipherProcess(const SaveCipher *cipher, uint8_t *data, uint32_t size) {
 
 uint32_t ie4SaveDecrypt(uint32_t seed, char *data, uint32_t size) {
     SaveCipher cipher;
-    uint32_t result = 0;
 
-    // The game reads the seed from the footer, a null one means no valid table
-    if (seed == 0) {
+    if (data == 0) {
         return 0;
+    }
+
+    // Saves written by this build carry the plaintext marker in their footer,
+    // there is nothing to undo. Refuse them like the original function does when
+    // this build does not allow plaintext. Retail saves carry a real seed and
+    // always go through the cipher below
+    if (seed == IE4_SAVE_PLAINTEXT_SEED) {
+        return IE4_SAVE_ALLOW_PLAINTEXT ? 1 : 0;
     }
 
     saveCipherInit(&cipher, seed);
 
     lockAllocator();
-    if (data != 0) {
-        saveCipherProcess(&cipher, (uint8_t *)data, size);
-        result = 1;
-    }
+    saveCipherProcess(&cipher, (uint8_t *)data, size);
     unlockAllocator();
 
-    return result;
+    return 1;
 }
 
 uint32_t ie4SaveEncrypt(char *data, uint32_t size) {
     SaveCipher cipher;
     uint32_t seed;
+
+    if (data == 0) {
+        return 0;
+    }
+
+    // Leave the payload in clear and hand the marker back to the caller, which
+    // writes it to the footer and only then checksums the buffer
+    if (IE4_SAVE_ALLOW_PLAINTEXT) {
+        return IE4_SAVE_PLAINTEXT_SEED;
+    }
 
     // Draw a non zero seed from the game's global RNG, as the original does
     do {
@@ -147,10 +160,6 @@ uint32_t ie4SaveEncrypt(char *data, uint32_t size) {
     saveCipherInit(&cipher, seed);
 
     lockAllocator();
-    if (data == 0) {
-        unlockAllocator();
-        return 0;
-    }
     saveCipherProcess(&cipher, (uint8_t *)data, size);
     unlockAllocator();
 

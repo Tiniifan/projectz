@@ -41,6 +41,32 @@ extern "C" {
 #define IE4_SAVE_SHUFFLE_ROUNDS 0x1000
 
 /**
+ * @brief Seed value marking a save file whose payload is stored in clear
+ * @details The game never writes this seed: it draws seeds until it gets a non
+ * zero one, so 0 is free to use as a marker. ie4SaveEncrypt stamps it into the
+ * SaveFooter and ie4SaveDecrypt takes it as "this payload is not encrypted".
+ * @note An unpatched game rejects such a file outright rather than loading
+ * garbage, since its own decryption fails on a null seed
+ */
+#define IE4_SAVE_PLAINTEXT_SEED 0
+
+/**
+ * @brief Whether this build works with save files whose payload is not encrypted
+ * @details Governs both directions at once, so a build can never write files it
+ * would refuse to read back:
+ * - true: ie4SaveEncrypt stores the payload in clear and stamps
+ *   IE4_SAVE_PLAINTEXT_SEED into the footer, and ie4SaveDecrypt takes that
+ *   marker at face value and loads the payload as is
+ * - false: ie4SaveEncrypt encrypts with a freshly drawn seed and ie4SaveDecrypt
+ *   refuses the marker, which is exactly what the original game functions do
+ * Encrypted save files load whatever this is set to, so a retail save is never
+ * locked out.
+ * @note Folded at compile time, so a false build emits the game's original
+ * behaviour with no runtime check left
+ */
+const bool IE4_SAVE_ALLOW_PLAINTEXT = false;
+
+/**
  * @brief Trailer stored in the last 8 bytes of every .ie4 file
  * @details Laid out little-endian right after the encrypted payload, so a save
  * file is `[ payload : size - 8 bytes ][ SaveFooter : 8 bytes ]`.
@@ -117,24 +143,35 @@ void saveCipherInit(SaveCipher *cipher, uint32_t seed);
 void saveCipherProcess(const SaveCipher *cipher, uint8_t *data, uint32_t size);
 
 /**
- * @brief Decrypts a save payload in place with a known seed
+ * @brief Loads a save payload in place, encrypted or not
  * @param seed Seed read from the SaveFooter of the file
- * @param data Payload to decrypt, modified in place
+ * @param data Payload to load, modified in place when it is encrypted
  * @param size Size of the payload in bytes, footer excluded
- * @return uint32_t 1 on success, 0 if the seed is 0 or the buffer is null
- * @note Replaces the game function originally located at 0x0033EFDC
+ * @return uint32_t 1 on success, 0 if the buffer is null or if the payload is in
+ * clear while IE4_SAVE_ALLOW_PLAINTEXT is false
+ * @details A seed of IE4_SAVE_PLAINTEXT_SEED means the payload is already in
+ * clear: it is left untouched when IE4_SAVE_ALLOW_PLAINTEXT is true, and
+ * rejected when it is false. Any other seed decrypts the way the game does, so
+ * retail save files load whatever that constant is set to.
+ * @note Replaces the game function originally located at 0x0033EFDC, which
+ * instead failed outright on a null seed
  * @warning The caller is expected to have validated the CRC32 beforehand
  */
 uint32_t ie4SaveDecrypt(uint32_t seed, char *data, uint32_t size);
 
 /**
- * @brief Encrypts a save payload in place with a freshly drawn seed
- * @param data Payload to encrypt, modified in place
+ * @brief Stores a save payload in place, encrypted or not
+ * @param data Payload to store, encrypted in place unless the build keeps it clear
  * @param size Size of the payload in bytes, footer excluded
- * @return uint32_t The non zero seed the payload was encrypted with, or 0 on failure
+ * @return uint32_t The seed the caller has to stamp into the SaveFooter:
+ * IE4_SAVE_PLAINTEXT_SEED when IE4_SAVE_ALLOW_PLAINTEXT is true, otherwise the
+ * non zero seed the payload was encrypted with. 0 on failure, which both call
+ * sites ignore anyway
+ * @details The caller computes the CRC32 after this call, so the checksum always
+ * matches what actually sits in the file.
  * @note Replaces the game function originally located at 0x0033F098
- * @warning The returned seed must be written to the SaveFooter, otherwise the
- * payload becomes unrecoverable
+ * @warning A payload left in clear is readable by any hex editor and is rejected
+ * by an unpatched game
  */
 uint32_t ie4SaveEncrypt(char *data, uint32_t size);
 
