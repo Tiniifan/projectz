@@ -46,6 +46,12 @@ IE4PlayerListBuild:
     addr:   0x0038A41C
     func:   ie4PlayerListBuild
 
+IE4PlayerListSort:
+    type:   branch
+    link:   false
+    addr:   0x0038A6F8
+    func:   ie4PlayerListSort
+
 IE4PlayerPoolCapacity00:
     type:   patch
     addr:   0x005B2100

@@ -3,6 +3,47 @@
 #include "../inazuma/ie4party.h"
 #include "../inazuma/ie4roster.h"
 
+#if IE4_ROSTER_PROFILE
+
+/**
+ * @brief Reads the low word of the system tick counter
+ * @return uint32_t Tick, counting at 268111856 Hz
+ */
+static inline uint32_t profTick(void) {
+    register uint32_t low __asm__("r0");
+    register uint32_t high __asm__("r1");
+
+    __asm__ volatile("svc 0x28" : "=r"(low), "=r"(high) :: "memory");
+    (void)high;
+    return low;
+}
+
+/**
+ * @brief Reports one timing by touching an address that encodes it
+ * @param tag Phase, 1 to 7
+ * @param ticks Ticks the phase took
+ */
+static void profReport(uint32_t tag, uint32_t ticks) {
+    volatile uint32_t *probe;
+
+    probe = (volatile uint32_t *)(((tag & 7) << 24) | ((ticks >> 8) & 0xFFFFFF));
+    (void)*probe;
+}
+
+#define PROF_DECL(name) uint32_t name = 0
+#define PROF_MARK(name) name = profTick()
+#define PROF_ADD(total, mark) total += profTick() - (mark)
+#define PROF_SEND(tag, total) profReport((tag), (total))
+
+#else
+
+#define PROF_DECL(name) ((void)0)
+#define PROF_MARK(name) ((void)0)
+#define PROF_ADD(total, mark) ((void)0)
+#define PROF_SEND(tag, total) ((void)0)
+
+#endif
+
 /**
  * @brief Resets an allocation bitmap to all free
  * @param bitmap Bitmap object, taken by address from a PlayerPool
@@ -201,6 +242,36 @@ static void writeSectionEnd(uint8_t *destination) {
 extern "C" int ie4CharaLookup(int database, int charaId, int unk);
 
 /**
+ * @brief Finds the base record of a character, holding its name ids
+ * @param database Object at offset 16 of IE4_CHARA_BASE_HOLDER
+ * @param baseId Base id, read at offset 4 of a character record
+ * @param unk Always 0 at every call site
+ * @return int Base record, or 0 when there is none
+ * @note Game function at 0x00493494
+ */
+extern "C" int ie4CharaBaseLookup(int database, int baseId, int unk);
+
+/**
+ * @brief Resolves one of the name ids of a character base record
+ * @param database Pointer read straight out of IE4_NAME_DB
+ * @param nameId Name id, at offset 8, or nickname id, at offset 12, of a base
+ * @param unk Always 0 at every call site
+ * @param unk2 Always 1 at every call site
+ * @return int Name record, whose offset 38 is the sort rank, or 0
+ * @note Game function at 0x00490978
+ */
+extern "C" int ie4NameLookup(int database, int nameId, int unk, int unk2);
+
+/**
+ * @brief Reads one of the eight stats of a player record
+ * @param record Player record, as returned by getPlayerOffset
+ * @param stat Stat index, 2 to 9
+ * @return int Stat value
+ * @note Game function at 0x00490484
+ */
+extern "C" int ie4PlayerStatValue(int record, int stat);
+
+/**
  * @brief Allocates a block with the game's general purpose allocator
  * @param size Size in bytes
  * @return void* The block, or NULL when the allocation failed
@@ -238,6 +309,14 @@ uint32_t ie4PlayerSectionRead(int manager, const SaveSection *header, uint8_t *d
     uint8_t *end = data + size;
     uint32_t count;
     uint32_t i;
+    PROF_DECL(profAll);
+    PROF_DECL(profStart);
+    PROF_DECL(profDecode);
+    PROF_DECL(profStats);
+    PROF_DECL(profRefresh);
+    PROF_DECL(profMark);
+
+    PROF_MARK(profStart);
 
     // The game publishes the cursor before validating anything, keep doing so
     *cursor = end;
@@ -291,25 +370,31 @@ uint32_t ie4PlayerSectionRead(int manager, const SaveSection *header, uint8_t *d
             }
 
             record = pool->records + slot * pool->stride;
+            PROF_MARK(profMark);
             record = (uint8_t *)ie4PlayerRecordInit(record);
             if (record == 0) {
                 continue;
             }
 
             deserializePlayerData((int)(record + 4), (const int *)block);
+            PROF_ADD(profDecode, profMark);
             playerId = *(uint32_t *)(record + 4);
 
+            PROF_MARK(profMark);
             ie4PlayerBuildStats(stats, record[22], playerId);
             for (k = 0; k < 10; k++) {
                 *(uint16_t *)(record + 208 + 2 * k) = (uint16_t)stats[k];
             }
+            PROF_ADD(profStats, profMark);
 
+            PROF_MARK(profMark);
             ie4PlayerRefreshEquipment(manager, playerId, 1);
             ie4PlayerRefreshMoves(manager, playerId, 1);
 
             if (*(uint32_t *)(record + 52) != 0) {
                 ie4PlayerRegisterAvatar(record[56], playerId);
             }
+            PROF_ADD(profRefresh, profMark);
 
             bitmapSet(pool->bitmap, slot, 1);
             pool->serial++;
@@ -317,11 +402,16 @@ uint32_t ie4PlayerSectionRead(int manager, const SaveSection *header, uint8_t *d
         }
     }
 
+    PROF_ADD(profAll, profStart);
+    PROF_SEND(1, profAll);
+    PROF_SEND(2, profDecode);
+    PROF_SEND(3, profStats);
+    PROF_SEND(4, profRefresh);
+
     *outSize = size;
     return 1;
 }
 
-__attribute__((optimize("no-tree-loop-distribute-patterns")))
 __attribute__((optimize("no-tree-loop-distribute-patterns")))
 uint32_t ie4OrderSectionRead(OrderList *order, uint8_t *bufBase, uint32_t bufSize,
                              uint8_t **cursor, uint32_t *outSize) {
@@ -334,6 +424,13 @@ uint32_t ie4OrderSectionRead(OrderList *order, uint8_t *bufBase, uint32_t bufSiz
     uint32_t entries;
     uint32_t recruited;
     uint32_t i;
+    PROF_DECL(profAll);
+    PROF_DECL(profStart);
+    PROF_DECL(profAppend);
+    PROF_DECL(profRemap);
+    PROF_DECL(profMark);
+
+    PROF_MARK(profStart);
 
     if (outSize != 0) {
         *outSize = 0;
@@ -386,12 +483,15 @@ uint32_t ie4OrderSectionRead(OrderList *order, uint8_t *bufBase, uint32_t bufSiz
         recruited = IE4_PLAYER_MAX;
     }
 
+    PROF_MARK(profMark);
     for (i = 0; i < recruited; i++) {
         ie4OrderListAppend((int)&IE4_ORDER_HANDLE, readU32(data + 4 * i), -1, 0);
     }
+    PROF_ADD(profAppend, profMark);
 
     // Team slots hold ids that are already in the recruit list, so they are
     // rewritten from it and land on their new index whatever the file said
+    PROF_MARK(profMark);
     for (i = 0; i < IE4_TEAM_SLOT_COUNT; i++) {
         int found = ie4OrderListFind(order, 0, readU32(data + 4 * (recruited + i)));
 
@@ -399,6 +499,7 @@ uint32_t ie4OrderSectionRead(OrderList *order, uint8_t *bufBase, uint32_t bufSiz
             order->ids[IE4_PLAYER_MAX + i] = order->ids[found];
         }
     }
+    PROF_ADD(profRemap, profMark);
 
     trailer = data + size;
     if (trailer + 4 > end) {
@@ -407,6 +508,11 @@ uint32_t ie4OrderSectionRead(OrderList *order, uint8_t *bufBase, uint32_t bufSiz
     if (readSectionEnd(trailer) != IE4_SECTION_END) {
         return 0;
     }
+
+    PROF_ADD(profAll, profStart);
+    PROF_SEND(5, profAll);
+    PROF_SEND(6, profAppend);
+    PROF_SEND(7, profRemap);
 
     *cursor = trailer + 4;
     if (outSize != 0) {
@@ -658,30 +764,36 @@ static int g_listView[IE4_LIST_POOL_SLOTS];
 /** @brief Pooled scratch buffers holding the entries of a PlayerListView */
 static uint8_t *g_listBuffer[IE4_LIST_POOL_SLOTS];
 
-/** @brief Build the slot was last handed out on, oldest slot loses its buffer */
-static uint32_t g_listUsed[IE4_LIST_POOL_SLOTS];
-
-/** @brief Number of builds served so far, stamped on the slot that serves one */
-static uint32_t g_listClock;
+/**
+ * @brief Tells whether a view the pool still holds a buffer for is alive
+ * @param view Address a slot was handed out to
+ * @return int 1 while a PlayerListView still sits there, 0 once it is gone
+ * @details The constructor the menus inline finishes by writing
+ * IE4_LIST_VIEW_VTABLE at the view's `+0`, so a slot whose view no longer reads
+ * back that word belongs to a menu object that has been freed and its buffer
+ * can be handed to somebody else. A menu that is merely idle, one the player
+ * left open under a submenu for instance, still reads back, so its entries are
+ * never pulled out from under it.
+ */
+static int listViewAlive(int view) {
+    return *(uint32_t *)view == IE4_LIST_VIEW_VTABLE;
+}
 
 /**
  * @brief Hands a view the scratch buffer its entries are written into
  * @param view PlayerListView asking for storage
  * @return uint8_t* Buffer of IE4_PLAYER_MAX entries, or NULL when none is left
  * @details A view keeps the same buffer across rebuilds, so a menu that reopens
- * does not churn the allocator. Once every slot is taken the buffer of the view
- * that was built longest ago is handed over, which never takes one away from a
- * view the player is still browsing since browsing rebuilds it.
+ * does not churn the allocator. Buffers only ever move to another view once the
+ * one holding them is dead; while every slot belongs to a live view the caller
+ * falls back to the storage inside the view, which shows fewer players but
+ * never hands out memory somebody else is reading.
  */
 static uint8_t *listStorage(int view) {
-    int oldest = 0;
     int i;
-
-    g_listClock++;
 
     for (i = 0; i < IE4_LIST_POOL_SLOTS; i++) {
         if (g_listBuffer[i] != 0 && g_listView[i] == view) {
-            g_listUsed[i] = g_listClock;
             return g_listBuffer[i];
         }
     }
@@ -693,20 +805,18 @@ static uint8_t *listStorage(int view) {
                 return 0;
             }
             g_listView[i] = view;
-            g_listUsed[i] = g_listClock;
             return g_listBuffer[i];
         }
     }
 
-    for (i = 1; i < IE4_LIST_POOL_SLOTS; i++) {
-        if (g_listUsed[i] < g_listUsed[oldest]) {
-            oldest = i;
+    for (i = 0; i < IE4_LIST_POOL_SLOTS; i++) {
+        if (!listViewAlive(g_listView[i])) {
+            g_listView[i] = view;
+            return g_listBuffer[i];
         }
     }
 
-    g_listView[oldest] = view;
-    g_listUsed[oldest] = g_listClock;
-    return g_listBuffer[oldest];
+    return 0;
 }
 
 /**
@@ -804,12 +914,17 @@ int ie4PlayerListBuild(int view, int team, int filter, uint32_t excludeId) {
         total = IE4_PLAYER_MAX;
     }
 
-    entry = listStorage(view);
-    if (entry == 0) {
-        // Out of scratch buffers: fall back to the storage the game embedded in
-        // the view, which cannot hold more than IE4_LIST_LEGACY_MAX entries
-        entry = (uint8_t *)(view + IE4_LIST_STORAGE_OFFSET);
-        if (total > IE4_LIST_LEGACY_MAX) {
+    // A list the view can hold on its own never touches the pool, which leaves
+    // the scratch buffers to the handful of views that really list a full roster
+    entry = (uint8_t *)(view + IE4_LIST_STORAGE_OFFSET);
+    if (total > IE4_LIST_LEGACY_MAX) {
+        uint8_t *scratch = listStorage(view);
+
+        if (scratch != 0) {
+            entry = scratch;
+        } else {
+            // Every buffer belongs to a view that is still alive, so show what
+            // fits rather than write over entries somebody else is reading
             total = IE4_LIST_LEGACY_MAX;
         }
     }
@@ -872,6 +987,173 @@ int ie4PlayerListBuild(int view, int team, int filter, uint32_t excludeId) {
         listWriteEntry(entry, playerId, i);
         listPush(view, entry);
         entry += IE4_LIST_ENTRY_SIZE;
+    }
+
+    return 1;
+}
+
+/** @brief Sort keys of the entries of a view, one per entry, built per sort */
+static uint32_t g_sortKey[IE4_PLAYER_MAX];
+
+/**
+ * @brief Reads the value a sort key names on one player
+ * @param key Sort key, 1 to IE4_LIST_SORT_KEY_MAX
+ * @param record Player record of the entry
+ * @param name Name record of the entry, may be NULL
+ * @param nickname Nickname record of the entry, may be NULL
+ * @return uint32_t Value to sort on, 0 when the key names nothing
+ */
+static uint32_t sortValue(int key, int record, int name, int nickname) {
+    switch (key) {
+    case 1:
+        return name != 0 ? *(uint16_t *)(name + 38) : 0;
+    case 2:
+        return nickname != 0 ? *(uint16_t *)(nickname + 38) : 0;
+    case 3:
+        return *(uint8_t *)(record + 22);
+    case 4:
+    case 5:
+    case 6:
+    case 7:
+    case 8:
+    case 9:
+    case 10:
+    case 11:
+        return (uint32_t)ie4PlayerStatValue(record, key - 2);
+    case 12:
+        return *(uint16_t *)(record + 28);
+    case 13:
+        return *(uint16_t *)(record + 30);
+    default:
+        return 0;
+    }
+}
+
+__attribute__((optimize("no-tree-loop-distribute-patterns")))
+uint32_t ie4PlayerListSort(int view, int key) {
+    void *holder;
+    int manager;
+    int charaBase;
+    int database;
+    int ascending;
+    uint32_t count;
+    uint32_t i;
+    uint32_t j;
+
+    holder = *(void **)PARTY_OFFSET;
+    if (holder == 0) {
+        _assert_func(0, key);
+    }
+    manager = *((int *)holder + 4);
+    if (manager == 0) {
+        return 0;
+    }
+
+    holder = *(void **)IE4_CHARA_BASE_HOLDER;
+    if (holder == 0) {
+        _assert_func(0, key);
+    }
+    charaBase = *((int *)holder + 4);
+    if (charaBase == 0) {
+        return 0;
+    }
+
+    holder = *(void **)IE4_CHARA_DB_HOLDER;
+    if (holder == 0) {
+        _assert_func(0, key);
+    }
+    database = *((int *)holder + 4);
+    if (database == 0) {
+        return 0;
+    }
+
+    count = *(uint32_t *)(view + 4);
+    if (count > IE4_PLAYER_MAX) {
+        count = IE4_PLAYER_MAX;
+    }
+
+    for (i = 0; i < count; i++) {
+        g_sortKey[i] = 0;
+    }
+
+    for (i = 0; i < count; i++) {
+        const uint8_t *entry = *(const uint8_t **)(view + IE4_LIST_TABLE_OFFSET + 4 * i);
+        int record;
+        int chara;
+        int base;
+        int nameDb;
+
+        // A team view leaves a null here for every slot it could not resolve
+        if (entry == 0) {
+            continue;
+        }
+
+        record = getPlayerOffset(manager, (int)*(const uint32_t *)entry);
+        if (record == 0) {
+            continue;
+        }
+
+        chara = ie4CharaLookup(database, *(int *)(record + 8), 0);
+        if (chara == 0) {
+            continue;
+        }
+
+        base = ie4CharaBaseLookup(charaBase, *(int *)(chara + 4), 0);
+        if (base == 0) {
+            continue;
+        }
+
+        nameDb = *(int *)IE4_NAME_DB;
+        if (nameDb == 0) {
+            _assert_func(0, key);
+        }
+
+        g_sortKey[i] = sortValue(key, record,
+                                 ie4NameLookup(nameDb, *(int *)(base + 8), 0, 1),
+                                 ie4NameLookup(nameDb, *(int *)(base + 12), 0, 1));
+    }
+
+    // Names read alphabetically, everything else reads best first
+    ascending = (key == 1 || key == 2);
+
+    for (i = 0; i < count; i++) {
+        for (j = i; j < count; j++) {
+            uint32_t *left;
+            uint32_t *right;
+            uint32_t swap;
+            int wanted;
+
+            if (ascending) {
+                wanted = g_sortKey[i] > g_sortKey[j];
+            } else {
+                wanted = g_sortKey[i] < g_sortKey[j];
+            }
+            if (!wanted) {
+                continue;
+            }
+
+            left = *(uint32_t **)(view + IE4_LIST_TABLE_OFFSET + 4 * i);
+            right = *(uint32_t **)(view + IE4_LIST_TABLE_OFFSET + 4 * j);
+
+            // An unresolved slot has no payload to trade, leave the pair alone
+            if (left == 0 || right == 0) {
+                continue;
+            }
+
+            swap = left[0];
+            left[0] = right[0];
+            right[0] = swap;
+            swap = left[1];
+            left[1] = right[1];
+            right[1] = swap;
+            swap = left[2];
+            left[2] = right[2];
+            right[2] = swap;
+
+            swap = g_sortKey[i];
+            g_sortKey[i] = g_sortKey[j];
+            g_sortKey[j] = swap;
+        }
     }
 
     return 1;

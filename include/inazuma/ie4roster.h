@@ -275,6 +275,21 @@ uint32_t ie4OrderSectionWrite(OrderList *order, uint8_t *bufBase, uint32_t bufSi
 int ie4OrderRemoveEntry(OrderList *order, uint32_t index, int keep, int benchOnly);
 
 /**
+ * @brief Set to 1 to have the save readers time themselves, 0 for a real build
+ * @details Emulator only debugging aid. Each phase of a load is timed with
+ * svcGetSystemTick and reported by reading an address that encodes the result,
+ * `0x0T000000 | ticks >> 8`, T being the phase: 1 the whole player section, 2
+ * its record decoding, 3 its stat building, 4 its equipment, move and avatar
+ * refreshes, 5 the whole order section, 6 its appends, 7 its team remapping.
+ * One unit is about a microsecond. Those addresses are unmapped, so Azahar logs
+ * every one of them as `unmapped Read32 @ 0x0T......` and the load breaks down
+ * by itself in the log.
+ * @warning Never ship this enabled. On a console an unmapped read is a data
+ * abort, not a log line.
+ */
+#define IE4_ROSTER_PROFILE 1
+
+/**
  * @brief Holder of the character database the list builder filters against
  * @details Same shape as PARTY_OFFSET: a pointer to a pointer, the object
  * itself living at offset 16.
@@ -316,10 +331,54 @@ int ie4OrderRemoveEntry(OrderList *order, uint32_t index, int keep, int benchOnl
  * @brief Number of scratch buffers kept for PlayerListView entry storage
  * @details A menu holds at most two views at once and a submenu opened over it
  * adds two more, so anything above four is margin. Buffers are allocated on
- * first use and the least recently built view loses its own once they are all
- * taken, which cannot hit a view that is still being browsed.
+ * first use and are only ever taken back from a view whose object has since
+ * died, which ie4PlayerListBuild recognises by IE4_LIST_VIEW_VTABLE no longer
+ * sitting at its `+0`.
  */
 #define IE4_LIST_POOL_SLOTS 12
+
+/**
+ * @brief Vtable every PlayerListView carries at its `+0`
+ * @details Written last by the constructor the menus inline, after the base
+ * class one at 0x005A5EFC. Finding it at a `+0` is how the entry storage pool
+ * tells a view that is still alive from one whose object has been freed.
+ */
+#define IE4_LIST_VIEW_VTABLE 0x5A2ECC
+
+/**
+ * @brief Holder of the character base records the sort reads names from
+ * @details Same shape as PARTY_OFFSET, the object itself living at offset 16.
+ */
+#define IE4_CHARA_BASE_HOLDER 0x5B09C8
+
+/**
+ * @brief Pointer to the name database, stored plain rather than behind a holder
+ */
+#define IE4_NAME_DB 0x5B0A38
+
+/**
+ * @brief Highest sort key ie4PlayerListSort knows, anything above sorts nothing
+ */
+#define IE4_LIST_SORT_KEY_MAX 13
+
+/**
+ * @brief Reorders the entries of a player list view
+ * @param view PlayerListView to sort in place
+ * @param key What to sort on: 1 name, 2 nickname, 3 level, 4 to 11 the eight
+ * stats, 12 appearances, 13 goals. Anything else leaves every key at zero
+ * @return uint32_t Non zero once the view was walked, 0 when a database was
+ * missing
+ * @details Replaces the game function at 0x0038A6F8, used by the sort submenu
+ * of the player list and by the statistics screen, which sorts on 13 then on 12
+ * to rank scorers and appearances. The original collected the sort keys in a
+ * 112 entry array on its own stack frame, so a list of more than 112 players
+ * wrote over the frame's saved registers and return address; this version keeps
+ * them in a static IE4_PLAYER_MAX array instead. It also skips the null table
+ * entries a team view pushes, which the original dereferenced blindly.
+ * @note Keys compare unsigned, and only keys 1 and 2 sort ascending; the order
+ * of the game's own selection sort is kept so ties land where they used to.
+ */
+uint32_t ie4PlayerListSort(int view, int key);
 
 /**
  * @brief Fills the player list view every menu browses
@@ -349,8 +408,9 @@ int ie4OrderRemoveEntry(OrderList *order, uint32_t index, int keep, int benchOnl
  * `group` being 0 for the first five source slots, 1 up to the sixteenth and 2
  * beyond. A team view pushes a null pointer for a slot it cannot resolve, so the
  * sixteen slots stay aligned.
- * @warning Falls back to the in-object storage, capped at IE4_LIST_LEGACY_MAX
- * entries, when no scratch buffer can be allocated
+ * @warning A list of IE4_LIST_LEGACY_MAX entries or fewer stays in the storage
+ * the view carries; a longer one needs a scratch buffer and is capped back to
+ * IE4_LIST_LEGACY_MAX when none can be had
  */
 int ie4PlayerListBuild(int view, int team, int filter, uint32_t excludeId);
 

@@ -291,9 +291,11 @@ bitmapFind = 0x498D00;
 bitmapSet = 0x44E40C;
 deserializePlayerData = 0x33AD30;
 getGlobalBitFlag = 0x1F2A8C;
+ie4CharaBaseLookup = 0x493494;
 ie4CharaFind = 0x24F5F8;
 ie4CharaFindAlt = 0x24F8CC;
 ie4CharaLookup = 0x493AE4;
+ie4NameLookup = 0x490978;
 ie4OrderListAppend = 0x250684;
 ie4OrderListFind = 0x39BC10;
 ie4OrderListMove = 0x39BCAC;
@@ -305,6 +307,7 @@ ie4PlayerRecordInit = 0x24F37C;
 ie4PlayerRefreshEquipment = 0x2FC444;
 ie4PlayerRefreshMoves = 0x2FC764;
 ie4PlayerRegisterAvatar = 0x3407CC;
+ie4PlayerStatValue = 0x490484;
 
 /* ie4io.h */
 openSaveDataFile = 0x1641EC;
