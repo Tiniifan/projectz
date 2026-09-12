@@ -266,6 +266,23 @@ cmndBtlCharaHandle = 0x22f650;
 cmndMessageReplaceVal = 0x22FD18;
 cmndBtlForgetSkill = 0x224214;
 
+/* ie4cfgbin.h */
+cfgBinReaderInit = 0x1CD804;
+cfgBinReaderRun = 0x1CFA74;
+cfgBinReaderSetUserData = 0x1CD92C;
+/* cfgBinArgPeekFloat = 0x12B610; */
+/* cfgBinArgPeekInt = 0x128C70; */
+/* cfgBinArgPeekString = 0x12C298; */
+/* cfgBinArgReadFloat = 0x12EDD0; */
+/* cfgBinArgReadHash = 0x12CFF0; */
+/* cfgBinArgReadInt = 0x12D07C; */
+/* cfgBinArgReadString = 0x12F8A0; */
+/* cfgBinReaderCopyStrings = 0x1CD8B0; */
+/* cfgBinReaderGetString = 0x48B5A4; */
+/* cfgBinReaderLoad = 0x1CFBA8; */
+/* cfgBinReaderSetTagTable = 0x1CFB70; */
+/* cfgBinReaderStep = 0x1CDAC4; */
+
 /* ie4btl.h */
 BTL_RIVAL_PARTY_OFFSET = 0x5B0968;
 BTL_PLAYER_OFFSET = 0x5B0B31;

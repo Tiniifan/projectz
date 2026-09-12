@@ -15,3 +15,129 @@ IE4SaveEncrypt:
     link:   false
     addr:   0x0033F098
     func:   ie4SaveEncrypt
+
+CfgBinReaderSetTagTable:
+    type:   branch
+    link:   false
+    addr:   0x001CFB70
+    func:   cfgBinReaderSetTagTable
+
+CfgBinReaderLoad:
+    type:   branch
+    link:   false
+    addr:   0x001CFBA8
+    func:   cfgBinReaderLoad
+
+CfgBinReaderCopyStrings:
+    type:   branch
+    link:   false
+    addr:   0x001CD8B0
+    func:   cfgBinReaderCopyStrings
+
+CfgBinReaderStep:
+    type:   branch
+    link:   false
+    addr:   0x001CDAC4
+    func:   cfgBinReaderStep
+
+CfgBinReaderGetString:
+    type:   branch
+    link:   false
+    addr:   0x0048B5A4
+    func:   cfgBinReaderGetString
+
+CfgBinArgReadInt:
+    type:   branch
+    link:   false
+    addr:   0x0012D07C
+    func:   cfgBinArgReadInt
+
+CfgBinArgReadFloat:
+    type:   branch
+    link:   false
+    addr:   0x0012EDD0
+    func:   cfgBinArgReadFloat
+
+CfgBinArgReadHash:
+    type:   branch
+    link:   false
+    addr:   0x0012CFF0
+    func:   cfgBinArgReadHash
+
+CfgBinArgReadString:
+    type:   branch
+    link:   false
+    addr:   0x0012F8A0
+    func:   cfgBinArgReadString
+
+CfgBinArgPeekInt:
+    type:   branch
+    link:   false
+    addr:   0x00128C70
+    func:   cfgBinArgPeekInt
+
+CfgBinArgPeekFloat:
+    type:   branch
+    link:   false
+    addr:   0x0012B610
+    func:   cfgBinArgPeekFloat
+
+CfgBinArgPeekString:
+    type:   branch
+    link:   false
+    addr:   0x0012C298
+    func:   cfgBinArgPeekString
+
+CharaFlagIsEncountered:
+    type:   branch
+    link:   false
+    addr:   0x001F2D30
+    func:   ie4CharaFlagIsEncountered
+
+CharaFlagSetEncountered:
+    type:   branch
+    link:   false
+    addr:   0x001F2D70
+    func:   ie4CharaFlagSetEncountered
+
+CharaFlagSetNew:
+    type:   branch
+    link:   false
+    addr:   0x001F2DF4
+    func:   ie4CharaFlagSetNew
+
+CharaFlagSetUnk5:
+    type:   branch
+    link:   false
+    addr:   0x001F2E78
+    func:   ie4CharaFlagSetUnk5
+
+CharaFlagIsRecruited:
+    type:   branch
+    link:   false
+    addr:   0x001F2F00
+    func:   ie4CharaFlagIsRecruited
+
+CharaFlagSetUnk6:
+    type:   branch
+    link:   false
+    addr:   0x001F2F40
+    func:   ie4CharaFlagSetUnk6
+
+CharaFlagQuery:
+    type:   branch
+    link:   false
+    addr:   0x002D6608
+    func:   ie4CharaFlagQuery
+
+CharaFlagMarkNewInline:
+    type:   branch
+    link:   false
+    addr:   0x0028EF5C
+    func:   ie4CharaFlagMarkNewAsm
+
+CharaMarkRecruitedInline:
+    type:   branch
+    link:   false
+    addr:   0x0039B900
+    func:   ie4CharaMarkRecruitedAsm
