@@ -153,3 +153,535 @@ BtlMatchStep:
     link:   true
     addr:   0x003F0118
     func:   ie4BtlMatchStep
+
+IE4PlayerSectionRead:
+    type:   branch
+    link:   false
+    addr:   0x002FD010
+    func:   ie4PlayerSectionRead
+
+IE4OrderSectionRead:
+    type:   branch
+    link:   false
+    addr:   0x0039B0A8
+    func:   ie4OrderSectionRead
+
+IE4OrderSectionWrite:
+    type:   branch
+    link:   false
+    addr:   0x0039C7A0
+    func:   ie4OrderSectionWrite
+
+IE4OrderRemoveEntry:
+    type:   branch
+    link:   false
+    addr:   0x0039C2AC
+    func:   ie4OrderRemoveEntry
+
+IE4PlayerListBuild:
+    type:   branch
+    link:   false
+    addr:   0x0038A41C
+    func:   ie4PlayerListBuild
+
+IE4PlayerListSort:
+    type:   branch
+    link:   false
+    addr:   0x0038A6F8
+    func:   ie4PlayerListSort
+
+IE4PlayerPoolCapacity00:
+    type:   patch
+    addr:   0x005B2100
+    data:   50010000
+
+IE4Capacity01:
+    type:   patch
+    addr:   0x00513564
+    data:   1E0DA0E3
+
+IE4Capacity02:
+    type:   patch
+    addr:   0x00529FC0
+    data:   061CA0E3
+
+IE4Capacity03:
+    type:   patch
+    addr:   0x00529FD4
+    data:   063DA0E3
+
+IE4Capacity04:
+    type:   patch
+    addr:   0x0052A01C
+    data:   060D51E3
+
+IE4Capacity05:
+    type:   patch
+    addr:   0x002FD6D4
+    data:   153EA0E3
+
+IE4Capacity06:
+    type:   patch
+    addr:   0x002FE020
+    data:   150E50E3
+
+IE4Capacity07:
+    type:   patch
+    addr:   0x0039B3F8
+    data:   150EA013
+
+IE4Capacity08:
+    type:   patch
+    addr:   0x0039B6C4
+    data:   150E5013
+
+IE4OrderCount09:
+    type:   patch
+    addr:   0x0039B6C0
+    data:   04069615
+
+IE4OrderCount10:
+    type:   patch
+    addr:   0x0039BA44
+    data:   040696E5
+
+IE4OrderCount11:
+    type:   patch
+    addr:   0x0039BA50
+    data:   04C686E5
+
+IE4OrderCount12:
+    type:   patch
+    addr:   0x0039BB00
+    data:   047696E5
+
+IE4OrderCount13:
+    type:   patch
+    addr:   0x0039BC18
+    data:   04C690E5
+
+IE4OrderOwner14:
+    type:   patch
+    addr:   0x0039B3DC
+    data:   082690E5
+
+IE4OrderOwner15:
+    type:   patch
+    addr:   0x0039B538
+    data:   082697E5
+
+IE4OrderOwner16:
+    type:   patch
+    addr:   0x0039BCC0
+    data:   081690E5
+
+IE4OrderOwner17:
+    type:   patch
+    addr:   0x0039BDA0
+    data:   080698E5
+
+IE4OrderOwner18:
+    type:   patch
+    addr:   0x0039BDBC
+    data:   080698E5
+
+IE4OrderOwner19:
+    type:   patch
+    addr:   0x0039BF10
+    data:   080698E5
+
+IE4OrderOwner20:
+    type:   patch
+    addr:   0x0039C06C
+    data:   080698E5
+
+IE4PartyCount21:
+    type:   patch
+    addr:   0x00232454
+    data:   546795E5
+
+IE4PartyCount22:
+    type:   patch
+    addr:   0x002968EC
+    data:   54B79AE5
+
+IE4PartyCount23:
+    type:   patch
+    addr:   0x002D6C34
+    data:   540797E5
+
+IE4PartyCount24:
+    type:   patch
+    addr:   0x002FDF98
+    data:   547790E5
+
+IE4PartyCount25:
+    type:   patch
+    addr:   0x002FE06C
+    data:   547790E5
+
+IE4PartyCount26:
+    type:   patch
+    addr:   0x002FE3D8
+    data:   541796E5
+
+IE4PartyCount27:
+    type:   patch
+    addr:   0x002FE684
+    data:   540796E5
+
+IE4PartyCount28:
+    type:   patch
+    addr:   0x002FE730
+    data:   540796E5
+
+IE4PartyCount29:
+    type:   patch
+    addr:   0x003402A4
+    data:   540790E5
+
+IE4PartyCount30:
+    type:   patch
+    addr:   0x002505B8
+    data:   54079015
+
+IE4TeamBase31:
+    type:   patch
+    addr:   0x002FD860
+    data:   054D8012
+
+IE4TeamBase32:
+    type:   patch
+    addr:   0x00296930
+    data:   050D80E2
+
+IE4TeamBase33:
+    type:   patch
+    addr:   0x002505F4
+    data:   050D80E2
+
+IE4TeamBase34:
+    type:   patch
+    addr:   0x003403D0
+    data:   051D81E2
+
+IE4TeamBase35:
+    type:   patch
+    addr:   0x002FE598
+    data:   051DA0E3
+
+IE4TeamBase36:
+    type:   patch
+    addr:   0x002FE144
+    data:   050D40E2
+
+IE4TeamBase37:
+    type:   patch
+    addr:   0x002FE1F0
+    data:   050D40E2
+
+IE4TeamBase38:
+    type:   patch
+    addr:   0x002FE884
+    data:   050D40E2
+
+IE4TeamBase39:
+    type:   patch
+    addr:   0x002FEB68
+    data:   050D40E2
+
+IE4TeamBase40:
+    type:   patch
+    addr:   0x0039BC58
+    data:   053DA0E3
+
+IE4TeamBase41:
+    type:   patch
+    addr:   0x0039C0E8
+    data:   052D41E2
+
+IE4TeamBase42:
+    type:   patch
+    addr:   0x0039C148
+    data:   051D41E2
+
+IE4OrderScan43:
+    type:   patch
+    addr:   0x002FDF08
+    data:   550F80E2
+
+IE4OrderScan44:
+    type:   patch
+    addr:   0x002FDF0C
+    data:   0040A0E1
+
+IE4OrderScan45:
+    type:   patch
+    addr:   0x002FDF10
+    data:   065C80E2
+
+IE4SaveBufferSize46:
+    type:   patch
+    addr:   0x00250EBC
+    data:   0609A0E3
+
+IE4SaveBufferSize47:
+    type:   patch
+    addr:   0x00250F10
+    data:   0619A0E3
+
+IE4SaveBufferSize48:
+    type:   patch
+    addr:   0x00251620
+    data:   0609A0E3
+
+IE4SaveBufferSize49:
+    type:   patch
+    addr:   0x00251678
+    data:   0619A0E3
+
+IE4SaveBufferSize50:
+    type:   patch
+    addr:   0x002519AC
+    data:   0619A0E3
+
+IE4SaveBufferSize51:
+    type:   patch
+    addr:   0x002D651C
+    data:   0619A0E3
+
+IE4SaveBufferSize52:
+    type:   patch
+    addr:   0x002D6990
+    data:   0619A0E3
+
+IE4SaveBufferSize53:
+    type:   patch
+    addr:   0x002D7CC4
+    data:   0619A0E3
+
+IE4SaveBufferSize54:
+    type:   patch
+    addr:   0x002FDB74
+    data:   0609A0E3
+
+IE4SaveBufferSize55:
+    type:   patch
+    addr:   0x002FDBD0
+    data:   0619A0E3
+
+IE4SaveBufferSize56:
+    type:   patch
+    addr:   0x002FDD80
+    data:   0619A0E3
+
+IE4SaveBufferSize57:
+    type:   patch
+    addr:   0x002FEE38
+    data:   0619A0E3
+
+IE4SaveBufferSize58:
+    type:   patch
+    addr:   0x00375D4C
+    data:   0629A0E3
+
+IE4SaveBufferSize59:
+    type:   patch
+    addr:   0x0038A0E4
+    data:   0629A0E3
+
+IE4SaveBufferSize60:
+    type:   patch
+    addr:   0x003997DC
+    data:   0609A0E3
+
+IE4SaveBufferSize61:
+    type:   patch
+    addr:   0x00399834
+    data:   0619A0E3
+
+IE4SaveBufferSize62:
+    type:   patch
+    addr:   0x00399F34
+    data:   0619A0E3
+
+IE4SaveBufferSize63:
+    type:   patch
+    addr:   0x0039A774
+    data:   0619A0E3
+
+IE4SaveBufferSize64:
+    type:   patch
+    addr:   0x0039AA40
+    data:   0619A0E3
+
+IE4SaveBufferSize65:
+    type:   patch
+    addr:   0x003D7A6C
+    data:   061981E2
+
+IE4SaveBufferSize66:
+    type:   patch
+    addr:   0x00469EE4
+    data:   0629A0E3
+
+IE4SaveBufferSize67:
+    type:   patch
+    addr:   0x00469F00
+    data:   0619A0E3
+
+IE4SaveBufferSize68:
+    type:   patch
+    addr:   0x00469F58
+    data:   0629A0E3
+
+IE4OrderScan04:
+    type:   patch
+    addr:   0x002FE2E8
+    data:   550F80E2
+
+IE4OrderScan05:
+    type:   patch
+    addr:   0x002FE2EC
+    data:   0040A0E1
+
+IE4OrderScan06:
+    type:   patch
+    addr:   0x002FE2F0
+    data:   065C80E2
+
+IE4TeamBaseTable01:
+    type:   patch
+    addr:   0x0058BC18
+    data:   50010000
+
+IE4TeamBaseTable02:
+    type:   patch
+    addr:   0x0058BC20
+    data:   60010000
+
+IE4TeamBaseTable03:
+    type:   patch
+    addr:   0x0058BC28
+    data:   70010000
+
+IE4TeamBaseTable04:
+    type:   patch
+    addr:   0x0058BC34
+    data:   50010000
+
+IE4TeamBaseTable05:
+    type:   patch
+    addr:   0x0058BC38
+    data:   60010000
+
+IE4TeamBaseTable06:
+    type:   patch
+    addr:   0x0058BC3C
+    data:   70010000
+
+IE4TeamBaseTable07:
+    type:   patch
+    addr:   0x0058BDA8
+    data:   50010000
+
+IE4TeamBaseTable08:
+    type:   patch
+    addr:   0x0058BDB0
+    data:   60010000
+
+IE4TeamBaseTable09:
+    type:   patch
+    addr:   0x0058BDB8
+    data:   70010000
+
+IE4TeamBaseTable10:
+    type:   patch
+    addr:   0x0058C26C
+    data:   50010000
+
+IE4TeamBaseTable11:
+    type:   patch
+    addr:   0x0058C274
+    data:   60010000
+
+IE4TeamBaseTable12:
+    type:   patch
+    addr:   0x0058C27C
+    data:   70010000
+
+IE4OrderCtor01:
+    type:   patch
+    addr:   0x00529FF4
+    data:   04468EE5
+
+IE4OrderCtor02:
+    type:   patch
+    addr:   0x00529FF8
+    data:   08468EE5
+
+IE4OrderCtor03:
+    type:   patch
+    addr:   0x0052A008
+    data:   0C468EE5
+
+IE4OrderCtor04:
+    type:   patch
+    addr:   0x0052A044
+    data:   04468EE5
+
+IE4OrderCtor05:
+    type:   patch
+    addr:   0x0052A04C
+    data:   10468EE5
+
+IE4OrderCtor06:
+    type:   patch
+    addr:   0x0052A050
+    data:   08168EE5
+
+IE4OrderCtor07:
+    type:   patch
+    addr:   0x0052A058
+    data:   0C168EE5
+
+IE4OrderOwner08:
+    type:   patch
+    addr:   0x002FDA78
+    data:   580790E5
+
+IE4OrderOwner09:
+    type:   patch
+    addr:   0x002FDA94
+    data:   080693E5
+
+IE4OrderOwner10:
+    type:   patch
+    addr:   0x0039B078
+    data:   080690E5
+
+IE4RecruitPage17:
+    type:   patch
+    addr:   0x002561A8
+    data:   150E54E3
+
+IE4RecruitPage18:
+    type:   patch
+    addr:   0x002561BC
+    data:   1450A013
+
+IE4TeamSlotMap19:
+    type:   patch
+    addr:   0x0030F824
+    data:   052DA0B3
+
+IE4TeamSlotMap20:
+    type:   patch
+    addr:   0x0030F844
+    data:   053DA0B3
+
+IE4TeamSlotMap21:
+    type:   patch
+    addr:   0x0030FBF8
+    data:   052DA0B3
+

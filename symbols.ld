@@ -306,6 +306,33 @@ saveLocationWrite = 0x16420C;
 getPlayerOffset = 0x2fbb40;
 canAddMorePartyMembers = 0x2FDF8C;
 
+/* ie4roster.h */
+IE4_CHARA_HANDLE = 0x5B0B2C;
+IE4_FLAG_HANDLE = 0x5B0B2F;
+IE4_ORDER_HANDLE = 0x5B0B2D;
+bitmapClear = 0x53C840;
+bitmapFind = 0x498D00;
+bitmapSet = 0x44E40C;
+deserializePlayerData = 0x33AD30;
+getGlobalBitFlag = 0x1F2A8C;
+ie4CharaBaseLookup = 0x493494;
+ie4CharaFind = 0x24F5F8;
+ie4CharaFindAlt = 0x24F8CC;
+ie4CharaLookup = 0x493AE4;
+ie4NameLookup = 0x490978;
+ie4OrderListAppend = 0x250684;
+ie4OrderListFind = 0x39BC10;
+ie4OrderListMove = 0x39BCAC;
+ie4OrderListRefresh = 0x39B3C8;
+ie4PartyClearCache = 0x2FC25C;
+ie4PartyDropPlayer = 0x2FBA50;
+ie4PlayerBuildStats = 0x33E404;
+ie4PlayerRecordInit = 0x24F37C;
+ie4PlayerRefreshEquipment = 0x2FC444;
+ie4PlayerRefreshMoves = 0x2FC764;
+ie4PlayerRegisterAvatar = 0x3407CC;
+ie4PlayerStatValue = 0x490484;
+
 /* ie4io.h */
 openSaveDataFile = 0x1641EC;
 writeSaveDataFile = 0x16420C;
