@@ -20,6 +20,8 @@ unsigned char* safeMemset(unsigned char *result, unsigned int a2);
 char* safeStrcmp(const char* dst, const char* src);
 // char* strncpy(char* dst, const char* src, size_t n);
 int safeStrlen(const char* str);
+// The game's sprintf, unbounded like the standard one
+int safeSprintf(char* dst, const char* format, ...);
 
 #ifdef __cplusplus
 }

@@ -108,6 +108,63 @@ SQInteger cmndBtlGetTeamPlayerCount(HSQUIRRELVM v);
  */
 SQInteger cmndBtlClearPlayersFromTeam(HSQUIRRELVM v);
 
+/**
+ * @brief Changes the coach of a team for the current match
+ * @param v Squirrel VM instance
+ * @return SQInteger 1 (pushes true/false to stack)
+ *
+ * Parameters expected on stack:
+ * - Index 2: Team number (integer, 0 or 1)
+ * - Index 3: Coach identifier (string ID like "iim0005" or integer number like 5)
+ *
+ * @note The team does not need to own that coach. The coach bonus is applied
+ * right away; works from BtlSetting as well as during the match
+ */
+SQInteger cmndBtlSetCoach(HSQUIRRELVM v);
+
+/**
+ * @brief Removes the coach of a team for the current match
+ * @param v Squirrel VM instance
+ * @return SQInteger 1 (pushes true/false to stack)
+ *
+ * Parameters expected on stack:
+ * - Index 2: Team number (integer, 0 or 1)
+ *
+ * @note The coach bonus is dropped right away. Picking a coach in the pause
+ * menu brings one back
+ */
+SQInteger cmndBtlRemoveCoach(HSQUIRRELVM v);
+
+/**
+ * @brief Changes the emblem of a team for the current match only
+ * @param v Squirrel VM instance
+ * @return SQInteger 1 (pushes true/false to stack)
+ *
+ * Parameters expected on stack:
+ * - Index 2: Team number (integer, 0 or 1)
+ * - Index 3: Emblem identifier (integer number like 12, or a file name like
+ *   "emb0012", "ems0012" or "emf0012", only its digits are used)
+ *
+ * @warning The match loads its emblem images once, so call this from InitBtl
+ * or BtlSetting; a later call only reaches what reads the emblem afterwards
+ */
+SQInteger cmndBtlSetEmblem(HSQUIRRELVM v);
+
+/**
+ * @brief Changes the team level of a team for the current match
+ * @param v Squirrel VM instance
+ * @return SQInteger 1 (pushes true/false to stack)
+ *
+ * Parameters expected on stack:
+ * - Index 2: Team number (integer, 0 or 1)
+ * - Index 3: Team level (integer, 0 to 255)
+ *
+ * @note This is the level shown on the versus screen before kick-off. The game
+ * computes it once at the start of the match, so call this from InitBtl or
+ * BtlSetting, after changing the members of the team
+ */
+SQInteger cmndBtlSetTeamLevel(HSQUIRRELVM v);
+
 #ifdef __cplusplus
 }
 #endif

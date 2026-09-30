@@ -61,6 +61,200 @@ int getBtlCharaHandleOffsetByID(int base, uint32_t hash, int unkArgument);
 int getBtlCharaHandleOffsetByNumber(int base, int playerNumber);
 
 /**
+ * @brief Pointer to the match object
+ * @details Allocated once at boot and reused by every match, so it is never
+ * cleared between two of them. All BTL_MATCH_* offsets are relative to it.
+ */
+#define BTL_MATCH_OFFSET 0x5B0920
+
+/** @brief Index (0 or 1) of the live state buffer, the match keeps two of them */
+#define BTL_MATCH_STATE_INDEX 56052
+
+/** @brief Offset of the first state buffer */
+#define BTL_MATCH_STATE_BASE 56072
+
+/** @brief Size of one state buffer */
+#define BTL_MATCH_STATE_SIZE 17368
+
+/**
+ * @brief Offset of the field geometry
+ * @details Floats: centre x, y, z at 0, half extents x, y, z at 12. The half
+ * width and half depth of a penalty area are at 48 and 56.
+ */
+#define BTL_MATCH_FIELD 142912
+
+/**
+ * @brief Offset of the battle script object, the one holding the CallMatch* callbacks
+ * @details Its first word is the Squirrel VM, and the byte at 4 is set while
+ * that VM is suspended inside a callback.
+ */
+#define BTL_MATCH_SCRIPT 152460
+
+/** @brief Offset within a state buffer of the player slot holding the ball, 255 when loose (byte) */
+#define BTL_STATE_BALL_HOLDER 5
+
+/** @brief Offset of the player array within a state buffer */
+#define BTL_STATE_PLAYERS 196
+
+/** @brief Size of one entry of the player array */
+#define BTL_STATE_PLAYER_SIZE 432
+
+/** @brief Number of entries of the player array, both teams included */
+#define BTL_STATE_PLAYER_COUNT 32
+
+/** @brief Offset of the team array within a state buffer */
+#define BTL_STATE_TEAMS 14972
+
+/** @brief Size of one entry of the team array */
+#define BTL_STATE_TEAM_SIZE 1044
+
+/** @brief Offset in a team entry of the direction it attacks along z, +1 or -1 (signed byte) */
+#define BTL_TEAM_DIRECTION 40
+
+/** @brief Offset in a team entry of its number of players on the field */
+#define BTL_TEAM_FIELD_COUNT 41
+
+/** @brief Offset in a team entry of the slot of its first player in the player array */
+#define BTL_TEAM_FIRST_SLOT 43
+
+/** @brief Offset in a player entry of its position, three floats */
+#define BTL_PLAYER_POSITION 0
+
+/** @brief Offset in a player entry of its CharaparamID hash, copied from BattlePlayer */
+#define BTL_PLAYER_PARAM_ID 340
+
+/**
+ * @brief Type tags of a BtlScriptArg
+ */
+#define BTL_SCRIPT_ARG_INT    1
+#define BTL_SCRIPT_ARG_FLOAT  2
+#define BTL_SCRIPT_ARG_BOOL   3
+#define BTL_SCRIPT_ARG_STRING 4
+#define BTL_SCRIPT_ARG_PTR    5
+
+/**
+ * @brief One argument handed to a script callback by callBtlScriptFunc
+ */
+typedef struct {
+    /** @brief One of the BTL_SCRIPT_ARG_* tags */
+    uint8_t Type;
+
+    /** @brief Padding */
+    uint8_t Pad[3];
+
+    /** @brief The value, reinterpreted according to Type */
+    uint32_t Value;
+} BtlScriptArg;
+
+/**
+ * @brief Setup of a team for the current match
+ * @details Two of them sit side by side in the battle team manager and are
+ * rebuilt at the start of every match, from the save for the player's team and
+ * from the match data for the other one. Nothing here is written back to the save.
+ */
+typedef struct {
+    /** @brief Uniform, 1000 * uniform number, + 2 for the away kit */
+    uint32_t Uniform;
+
+    /** @brief Unknown data field */
+    uint32_t Unk4;
+
+    /** @brief Unknown data field */
+    uint32_t Unk8;
+
+    /** @brief CRC32 of the formation name, "ifa%04d" */
+    uint32_t FormationHash;
+
+    /** @brief CRC32 of the coach name, "iim%04d", 0 for no coach */
+    uint32_t CoachHash;
+
+    /** @brief Emblem number, the XXXX of the emb/ems/emf files (0 reads as 1) */
+    uint16_t EmblemId;
+
+    /** @brief Team name number, the XXXX of the ts%04d text */
+    uint16_t TeamNameId;
+
+    /** @brief Unknown, every writer of Level stores the same value here too */
+    uint8_t Unk24;
+
+    /** @brief Team level shown on the versus screen before kick-off (0-255) */
+    uint8_t Level;
+
+    /** @brief Unknown value the game derives from Level through a table, 999 if missing */
+    uint16_t Unk26;
+
+    /** @brief Unknown 12-byte data block */
+    uint8_t UnkBlock1[12];
+
+    /** @brief Custom team name, used instead of TeamNameId when not empty */
+    char TeamName[40];
+} BtlTeamSetup;
+
+/**
+ * @brief Retrieves the setup of a team for the current match
+ * @param unused Ignored, the game passes BTL_PLAYER_OFFSET
+ * @param team Team identifier (0 = player team, 1 = rival team)
+ * @return BtlTeamSetup* The setup, or NULL if team is out of range or no match data exists
+ */
+BtlTeamSetup* getBtlTeamSetup(void* unused, uint32_t team);
+
+/**
+ * @brief Retrieves the team the player controls in the current match
+ * @param unused Ignored, the game passes BTL_PLAYER_OFFSET
+ * @return uint32_t Team identifier, normally 0
+ */
+uint32_t getBtlUserTeam(void* unused);
+
+/**
+ * @brief Recomputes the in-match stats of every player of both teams
+ * @param match The match object, see BTL_MATCH_OFFSET
+ * @param state The live state buffer of that match
+ * @param unk Unknown argument, but it's always 0
+ * @return uint32_t Unused by every caller
+ * @details Starts again from the base stats and reapplies the team effects and
+ * the coach bonus, so calling it any number of times is harmless. Current FP
+ * and TP are left alone.
+ */
+uint32_t btlRecalcPlayerParams(int match, int state, int unk);
+
+/**
+ * @brief Tells whether a position lies inside one of the two penalty areas
+ * @param field The field geometry, see BTL_MATCH_FIELD
+ * @param position Three floats, a player entry can be passed as is
+ * @param side Which area: the one a team defends is side = +direction, the one
+ * it attacks is side = -direction (see BTL_TEAM_DIRECTION)
+ * @param margin Grows the area by this much on every side, the game mostly passes 0
+ * @return int Non-zero if inside
+ */
+int btlIsInPenaltyArea(const float* field, const void* position, float side, float margin);
+
+/**
+ * @brief Unidentified step of the match update, run once per frame of live play
+ * @param match The match object, see BTL_MATCH_OFFSET
+ * @return uint32_t Unused by its caller
+ * @note Only called from the match update, which ie4BtlMatchStep hooks
+ */
+uint32_t btlMatchStepUnk(int match);
+
+/**
+ * @brief Calls a function of a script object, without letting it suspend
+ * @param script Script object, see BTL_MATCH_SCRIPT
+ * @param name Name of the function to call
+ * @param args Arguments to push
+ * @param count Number of entries in args
+ * @return int Negative if the script has no such function
+ * @warning The called function must not wait, the VM stack is restored as soon
+ * as it returns
+ */
+int callBtlScriptFunc(int* script, const char* name, const BtlScriptArg* args, int count);
+
+/**
+ * @brief Recomputes the stats of both teams of the current match
+ * @details Picks up a change of coach. Does nothing outside of a match.
+ */
+void ie4BtlRefreshPlayerParams(void);
+
+/**
  * @brief Structure representing a battle player with all combat-related data
  * @details Contains complete player information including stats, special moves,
  * and battle-specific attributes used during combat encounters

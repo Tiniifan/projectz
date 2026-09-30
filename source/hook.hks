@@ -141,3 +141,15 @@ CharaMarkRecruitedInline:
     link:   false
     addr:   0x0039B900
     func:   ie4CharaMarkRecruitedAsm
+
+BtlMatchSetup:
+    type:   branch
+    link:   false
+    addr:   0x00417B84
+    func:   ie4BtlOnMatchSetupAsm
+
+BtlMatchStep:
+    type:   branch
+    link:   true
+    addr:   0x003F0118
+    func:   ie4BtlMatchStep

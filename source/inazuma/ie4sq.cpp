@@ -413,6 +413,10 @@ HSQUIRRELVM IE4RegisterSquirrelFunc(int gameContext, HSQUIRRELVM squirrelVM) {
         register_global_func(vm, "CMND_BTL_REMOVE_MEMBER", (int)cmndBtlRemoveMember);			
         register_global_func(vm, "CMND_BTL_GET_TEAM_PLAYER_COUNT", (int)cmndBtlGetTeamPlayerCount);
         register_global_func(vm, "CMND_BTL_CLEAR_PLAYERS_FROM_TEAM", (int)cmndBtlClearPlayersFromTeam);
+        register_global_func(vm, "CMND_BTL_SET_COACH", (int)cmndBtlSetCoach);
+        register_global_func(vm, "CMND_BTL_REMOVE_COACH", (int)cmndBtlRemoveCoach);
+        register_global_func(vm, "CMND_BTL_SET_EMBLEM", (int)cmndBtlSetEmblem);
+        register_global_func(vm, "CMND_BTL_SET_TEAM_LEVEL", (int)cmndBtlSetTeamLevel);
         
         // Insert your custom functions here
 	}

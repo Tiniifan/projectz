@@ -886,3 +886,172 @@ SQInteger cmndBtlClearPlayersFromTeam(HSQUIRRELVM v) {
     sq_pushbool(v, SQTrue);
     return 1;
 }
+
+/**
+ * @brief Reads the team parameter at index 2 and returns its match setup
+ * @return BtlTeamSetup* The setup, or NULL if the parameter is invalid or no match data exists
+ */
+static BtlTeamSetup* getTeamSetupParam(HSQUIRRELVM v, SQInteger* team) {
+    if (SQ_FAILED(sq_getinteger(v, 2, team)) || *team < 0 || *team > 1) {
+        return 0;
+    }
+
+    return getBtlTeamSetup(reinterpret_cast<void*>(BTL_PLAYER_OFFSET), static_cast<uint32_t>(*team));
+}
+
+SQInteger cmndBtlSetCoach(HSQUIRRELVM v) {
+    // Check if we have the required parameters (team + coach)
+    if (sq_gettop(v) < 3) {
+        sq_pushbool(v, SQFalse);
+        return 1;
+    }
+
+    SQInteger team;
+    BtlTeamSetup* setup = getTeamSetupParam(v, &team);
+    if (!setup) {
+        sq_pushbool(v, SQFalse);
+        return 1;
+    }
+
+    uint32_t coachHash;
+    SQObjectType paramType = sq_gettype(v, 3);
+
+    if (paramType == OT_STRING) {
+        // Coach ID, like "iim0005"
+        const SQChar* coachID;
+        if (SQ_FAILED(sq_getstring(v, 3, &coachID))) {
+            sq_pushbool(v, SQFalse);
+            return 1;
+        }
+        coachHash = getCrc32(reinterpret_cast<uint8_t*>(const_cast<char*>(coachID)), 0, 0);
+    } else if (paramType == OT_INTEGER) {
+        // Coach number, like 5 for "iim0005"
+        SQInteger coachNumber;
+        if (SQ_FAILED(sq_getinteger(v, 3, &coachNumber)) || coachNumber < 0 || coachNumber > 9999) {
+            sq_pushbool(v, SQFalse);
+            return 1;
+        }
+        char coachID[16];
+        safeSprintf(coachID, "iim%04d", static_cast<int>(coachNumber));
+        coachHash = getCrc32(reinterpret_cast<uint8_t*>(coachID), 0, 0);
+    } else {
+        sq_pushbool(v, SQFalse);
+        return 1;
+    }
+
+    setup->CoachHash = coachHash;
+
+    // Apply the new coach bonus right away
+    ie4BtlRefreshPlayerParams();
+
+    sq_pushbool(v, SQTrue);
+    return 1;
+}
+
+SQInteger cmndBtlRemoveCoach(HSQUIRRELVM v) {
+    // Check if we have the required parameter (team)
+    if (sq_gettop(v) < 2) {
+        sq_pushbool(v, SQFalse);
+        return 1;
+    }
+
+    SQInteger team;
+    BtlTeamSetup* setup = getTeamSetupParam(v, &team);
+    if (!setup) {
+        sq_pushbool(v, SQFalse);
+        return 1;
+    }
+
+    // No coach matches a null hash, so no coach bonus applies anymore
+    setup->CoachHash = 0;
+
+    ie4BtlRefreshPlayerParams();
+
+    sq_pushbool(v, SQTrue);
+    return 1;
+}
+
+SQInteger cmndBtlSetEmblem(HSQUIRRELVM v) {
+    // Check if we have the required parameters (team + emblem)
+    if (sq_gettop(v) < 3) {
+        sq_pushbool(v, SQFalse);
+        return 1;
+    }
+
+    SQInteger team;
+    BtlTeamSetup* setup = getTeamSetupParam(v, &team);
+    if (!setup) {
+        sq_pushbool(v, SQFalse);
+        return 1;
+    }
+
+    SQInteger emblem = -1;
+    SQObjectType paramType = sq_gettype(v, 3);
+
+    if (paramType == OT_INTEGER) {
+        // Emblem number, like 12
+        if (SQ_FAILED(sq_getinteger(v, 3, &emblem))) {
+            sq_pushbool(v, SQFalse);
+            return 1;
+        }
+    } else if (paramType == OT_STRING) {
+        // Emblem file name, like "emb0012", "ems0012" or "emf0012"
+        const SQChar* emblemID;
+        if (SQ_FAILED(sq_getstring(v, 3, &emblemID))) {
+            sq_pushbool(v, SQFalse);
+            return 1;
+        }
+
+        const SQChar* digits = emblemID;
+        while (*digits && (*digits < '0' || *digits > '9')) {
+            digits++;
+        }
+
+        if (*digits) {
+            emblem = 0;
+            while (*digits >= '0' && *digits <= '9' && emblem <= 0x7FF) {
+                emblem = emblem * 10 + (*digits - '0');
+                digits++;
+            }
+        }
+    }
+
+    // The game keeps emblem numbers on 11 bits, and treats 0 as 1
+    if (emblem < 1 || emblem > 0x7FF) {
+        sq_pushbool(v, SQFalse);
+        return 1;
+    }
+
+    setup->EmblemId = static_cast<uint16_t>(emblem);
+
+    sq_pushbool(v, SQTrue);
+    return 1;
+}
+
+SQInteger cmndBtlSetTeamLevel(HSQUIRRELVM v) {
+    // Check if we have the required parameters (team + level)
+    if (sq_gettop(v) < 3) {
+        sq_pushbool(v, SQFalse);
+        return 1;
+    }
+
+    SQInteger team;
+    BtlTeamSetup* setup = getTeamSetupParam(v, &team);
+    if (!setup) {
+        sq_pushbool(v, SQFalse);
+        return 1;
+    }
+
+    SQInteger level;
+    if (SQ_FAILED(sq_getinteger(v, 3, &level)) || level < 0 || level > 255) {
+        sq_pushbool(v, SQFalse);
+        return 1;
+    }
+
+    // The game always writes both bytes together, keep them in step
+    setup->Unk24 = static_cast<uint8_t>(level);
+    setup->Level = static_cast<uint8_t>(level);
+
+    sq_pushbool(v, SQTrue);
+    return 1;
+}

@@ -288,9 +288,16 @@ BTL_RIVAL_PARTY_OFFSET = 0x5B0968;
 BTL_PLAYER_OFFSET = 0x5B0B31;
 BTLCHARA_Handle_OFFSET = 0x5B0998;
 BTL_TEAM_MANAGER_OFFSET = 0x5B0990;
+BTL_MATCH_OFFSET = 0x5B0920;
+btlIsInPenaltyArea = 0x3D33F0;
+btlMatchStepUnk = 0x3CC9A8;
+btlRecalcPlayerParams = 0x3C19E8;
+callBtlScriptFunc = 0x47D2A8;
 getBtlPlayerOffset = 0x28DCC8;
 getBtlCharaHandleOffsetByID = 0x3A9C04;
 getBtlCharaHandleOffsetByNumber = 0x3A9DD8;
+getBtlTeamSetup = 0x28D334;
+getBtlUserTeam = 0x28D30C;
 
 /* ie4save.h */
 saveLocationWrite = 0x16420C;
