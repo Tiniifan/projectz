@@ -351,6 +351,7 @@ allocatorAlloc = 0x51F98C;
 allocatorFree = 0x507E48;
 getRandomNumber = 0x50670C;
 lockAllocator = 0x506100;
+textFindEntry = 0x490B58;
 unlockAllocator = 0x5062B0;
 
 /* crc32.h */

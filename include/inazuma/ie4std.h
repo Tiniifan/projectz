@@ -44,6 +44,22 @@ int allocatorFree(int *context, unsigned int allocator, int unk1);
 int getRandomNumber(unsigned int modulo);
 
 /**
+ * @brief Memory offset of the pointer to the system_text table
+ * @details Holds the "sysmes-*" texts, looked up with textFindEntry.
+ */
+#define SYSTEM_TEXT_OFFSET 0x5B0A60
+
+/**
+ * @brief Looks up an entry of a text table by the CRC32 of its label
+ * @param table Text table, e.g. *(int*)SYSTEM_TEXT_OFFSET
+ * @param crc CRC32 of the label, see getCrc32
+ * @param unk2 Unknown, the match loader passes 0
+ * @param unk3 Unknown, the match loader passes 1
+ * @return const char** The entry, whose first word is the text or NULL, NULL when missing
+ */
+const char **textFindEntry(int table, unsigned int crc, int unk2, int unk3);
+
+/**
  * @brief Acquires the game's global allocator lock
  * @note The lock is re-entrant: the game itself nests acquisitions, for example
  * around the save file encryption

@@ -374,6 +374,43 @@ typedef struct {
     uint8_t Flags;
 } SoccerInfo;
 
+/** @brief SoccerInfo Mode of a 5 vs 5 challenge, also the mode byte of the match rules */
+#define SOCCER_MODE_CHALLENGE 1
+
+/** @brief SoccerInfo Mode of an 11 vs 11 match */
+#define SOCCER_MODE_MATCH     2
+
+/**
+ * @brief Offset of the rules of the match within the team container, *(BTL_TEAM_MANAGER_OFFSET + 0x10)
+ * @details The match loader fills them from the soccer_config entry of the
+ * match before InitBtl runs, rolling BTL_VICTORY_RANDOM and resolving the
+ * objective text on the way; the field setup, which runs after BtlSetting,
+ * copies them into the field geometry.
+ */
+#define BTL_RULES 5492
+
+/** @brief Offset in the rules of the mode, one of SOCCER_MODE_* (byte) */
+#define BTL_RULES_MODE 0
+
+/** @brief Offset in the rules of the victory condition, one of BTL_VICTORY_* (byte) */
+#define BTL_RULES_VICTORY 1
+
+/** @brief Offset in the rules of the text of the victory condition, "sysmes-scpps-%04d" of system_text (const char*) */
+#define BTL_RULES_OBJECTIVE 4
+
+/** @brief Offset in the rules of the length of the game in minutes (32 bit) */
+#define BTL_RULES_TIME 8
+
+/** @brief Length the match loader gives a BTL_VICTORY_KEEP_BALL challenge, in minutes */
+#define BTL_KEEP_BALL_TIME 5
+
+/**
+ * @brief Weights the match loader rolls BTL_VICTORY_RANDOM with
+ * @details Three 32 bit percentages, for BTL_VICTORY_GET_BALL, BTL_VICTORY_SCORE
+ * and BTL_VICTORY_KEEP_BALL in that order (20, 60 and 20).
+ */
+#define BTL_RANDOM_VICTORY_WEIGHTS 0x58B678
+
 /**
  * @brief Type tags of a BtlScriptArg
  */

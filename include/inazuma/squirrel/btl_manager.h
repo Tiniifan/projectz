@@ -165,6 +165,58 @@ SQInteger cmndBtlSetEmblem(HSQUIRRELVM v);
  */
 SQInteger cmndBtlSetTeamLevel(HSQUIRRELVM v);
 
+/**
+ * @brief Changes the victory condition of the current match
+ * @param v Squirrel VM instance
+ * @return SQInteger 1 (pushes true/false to stack)
+ *
+ * Parameters expected on stack:
+ * - Index 2: Victory condition (integer, one of BTL_VICTORY_*: 0 to 7)
+ *
+ * @details Does what the match loader does with the VictoryCondition of
+ * soccer_config: BTL_VICTORY_RANDOM is rolled into 1, 2 or 3 right away, a
+ * BTL_VICTORY_KEEP_BALL challenge lasts BTL_KEEP_BALL_TIME minutes, and the
+ * objective text follows the new condition.
+ *
+ * @warning The field setup reads the condition once, after BtlSetting, so call
+ * this from InitBtl or BtlSetting; a later call does nothing to the match
+ *
+ * Example:
+ * @code
+ * InitBtl <- function ()
+ * {
+ *     CMND_BTL_SET_VICTORY_CONDITION(5); // win with a 2 goal lead
+ * };
+ * @endcode
+ */
+SQInteger cmndBtlSetVictoryCondition(HSQUIRRELVM v);
+
+/**
+ * @brief Changes the maximum time of the current match, how long it lasts
+ * @param v Squirrel VM instance
+ * @return SQInteger 1 (pushes true/false to stack)
+ *
+ * Parameters expected on stack:
+ * - Index 2: Length in minutes, the unit of the Time column of soccer_config
+ *   (integer, 1 to 255)
+ *
+ * @note CMND_BTL_SET_VICTORY_CONDITION gives a BTL_VICTORY_KEEP_BALL challenge
+ * BTL_KEEP_BALL_TIME minutes, so call this one after it
+ *
+ * @warning The field setup reads the length once, after BtlSetting, so call
+ * this from InitBtl or BtlSetting; a later call does nothing to the match
+ *
+ * Example:
+ * @code
+ * InitBtl <- function ()
+ * {
+ *     CMND_BTL_SET_VICTORY_CONDITION(5);
+ *     CMND_BTL_SET_MAX_TIME(10);
+ * };
+ * @endcode
+ */
+SQInteger cmndBtlSetMaxTime(HSQUIRRELVM v);
+
 #ifdef __cplusplus
 }
 #endif

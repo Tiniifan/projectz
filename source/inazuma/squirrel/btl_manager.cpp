@@ -3,6 +3,7 @@
 #include "../utils/crc32.h"
 #include "../inazuma/ie4sq.h"
 #include "../inazuma/ie4btl.h"
+#include "../inazuma/ie4std.h"
 #include "../inazuma/ie4player.h"
 #include "../squirrel-2.2.3/squirrel/squirrel.h"
 #include "../squirrel-2.2.3/squirrel/sqapi.h"
@@ -1051,6 +1052,106 @@ SQInteger cmndBtlSetTeamLevel(HSQUIRRELVM v) {
     // The game always writes both bytes together, keep them in step
     setup->Unk24 = static_cast<uint8_t>(level);
     setup->Level = static_cast<uint8_t>(level);
+
+    sq_pushbool(v, SQTrue);
+    return 1;
+}
+
+/** @brief Rules of the current match, see BTL_RULES; NULL outside of a match */
+static uint8_t* getMatchRules(void) {
+    int teamManagerPtr = *reinterpret_cast<int*>(BTL_TEAM_MANAGER_OFFSET);
+    if (!teamManagerPtr) {
+        return 0;
+    }
+
+    uint8_t* container = reinterpret_cast<uint8_t*>(*reinterpret_cast<int*>(teamManagerPtr + 0x10));
+    if (!container) {
+        return 0;
+    }
+
+    return container + BTL_RULES;
+}
+
+/** @brief Rolls BTL_VICTORY_RANDOM the way the match loader does */
+static uint8_t rollRandomVictory(void) {
+    const int32_t *weights = reinterpret_cast<const int32_t *>(BTL_RANDOM_VICTORY_WEIGHTS);
+    int32_t roll = static_cast<int32_t>((static_cast<uint32_t>(getRandomNumber(0)) >> 8) % 100);
+
+    if (roll < weights[0]) {
+        return BTL_VICTORY_GET_BALL;
+    }
+    roll -= weights[0];
+    if (roll < weights[1]) {
+        return BTL_VICTORY_SCORE;
+    }
+    return BTL_VICTORY_KEEP_BALL;
+}
+
+SQInteger cmndBtlSetVictoryCondition(HSQUIRRELVM v) {
+    // Check if we have the required parameter (victory condition)
+    if (sq_gettop(v) < 2) {
+        sq_pushbool(v, SQFalse);
+        return 1;
+    }
+
+    SQInteger victory;
+    if (SQ_FAILED(sq_getinteger(v, 2, &victory)) || victory < BTL_VICTORY_NONE || victory > BTL_VICTORY_CLEAN_SHEET) {
+        sq_pushbool(v, SQFalse);
+        return 1;
+    }
+
+    uint8_t* rules = getMatchRules();
+    if (!rules) {
+        sq_pushbool(v, SQFalse);
+        return 1;
+    }
+
+    bool challenge = rules[BTL_RULES_MODE] == SOCCER_MODE_CHALLENGE;
+
+    if (challenge && victory == BTL_VICTORY_RANDOM) {
+        victory = rollRandomVictory();
+    }
+
+    rules[BTL_RULES_VICTORY] = static_cast<uint8_t>(victory);
+
+    if (challenge && victory == BTL_VICTORY_KEEP_BALL) {
+        *reinterpret_cast<uint32_t*>(rules + BTL_RULES_TIME) = BTL_KEEP_BALL_TIME;
+    }
+
+    // The objective shown before kick-off was resolved for the old condition
+    int text = *reinterpret_cast<int*>(SYSTEM_TEXT_OFFSET);
+    if (text) {
+        char label[32];
+        safeSprintf(label, "sysmes-scpps-%04d", static_cast<int>(victory));
+
+        const char** entry = textFindEntry(text, static_cast<unsigned int>(getCrc32(reinterpret_cast<uint8_t*>(label), 0, 0)), 0, 1);
+        *reinterpret_cast<const char**>(rules + BTL_RULES_OBJECTIVE) = (entry && *entry) ? *entry : "";
+    }
+
+    sq_pushbool(v, SQTrue);
+    return 1;
+}
+
+SQInteger cmndBtlSetMaxTime(HSQUIRRELVM v) {
+    // Check if we have the required parameter (length in minutes)
+    if (sq_gettop(v) < 2) {
+        sq_pushbool(v, SQFalse);
+        return 1;
+    }
+
+    SQInteger minutes;
+    if (SQ_FAILED(sq_getinteger(v, 2, &minutes)) || minutes < 1 || minutes > 255) {
+        sq_pushbool(v, SQFalse);
+        return 1;
+    }
+
+    uint8_t* rules = getMatchRules();
+    if (!rules) {
+        sq_pushbool(v, SQFalse);
+        return 1;
+    }
+
+    *reinterpret_cast<uint32_t*>(rules + BTL_RULES_TIME) = static_cast<uint32_t>(minutes);
 
     sq_pushbool(v, SQTrue);
     return 1;

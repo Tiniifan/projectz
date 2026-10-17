@@ -2,6 +2,6 @@
 #define NEWCODEINFO_H
 
 #define NEWCODE_OFFSET 0x00626000
-#define NEWCODE_SIZE 0x0000bce0
+#define NEWCODE_SIZE 0x0000bfa0
 
 #endif // NEWCODEINFO_H
