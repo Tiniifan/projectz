@@ -148,6 +148,54 @@ BtlMatchSetup:
     addr:   0x00417B84
     func:   ie4BtlOnMatchSetupAsm
 
+BtlChallengeGoal:
+    type:   branch
+    link:   false
+    addr:   0x003E6A44
+    func:   ie4BtlChallengeOnGoal
+
+BtlChallengeTimeUp:
+    type:   branch
+    link:   false
+    addr:   0x003E6BDC
+    func:   ie4BtlChallengeOnTimeUp
+
+BtlKickoffTeam:
+    type:   branch
+    link:   false
+    addr:   0x00409CA4
+    func:   ie4BtlOnKickoffAsm
+
+BtlChallengeLockBall:
+    type:   branch
+    link:   true
+    addr:   0x003E8808
+    func:   ie4BtlLockGoalBall
+
+BtlGoalGuard:
+    type:   branch
+    link:   false
+    addr:   0x003D8D08
+    func:   ie4BtlOnGoalGuardAsm
+
+BtlPlaceGoals:
+    type:   branch
+    link:   true
+    addr:   0x003AF850
+    func:   ie4BtlPlaceGoals
+
+BtlChallengeWalls:
+    type:   branch
+    link:   false
+    addr:   0x003CA35C
+    func:   ie4BtlChallengeWallsAsm
+
+BtlShotCheck:
+    type:   branch
+    link:   false
+    addr:   0x003ECFAC
+    func:   ie4BtlShotCheckAsm
+
 BtlMatchStep:
     type:   branch
     link:   true

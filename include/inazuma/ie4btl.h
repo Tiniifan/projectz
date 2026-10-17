@@ -117,11 +117,262 @@ int getBtlCharaHandleOffsetByNumber(int base, int playerNumber);
 /** @brief Offset in a team entry of the slot of its first player in the player array */
 #define BTL_TEAM_FIRST_SLOT 43
 
+/** @brief Offset in a team entry of the index of its goalkeeper among its players, 255 for none */
+#define BTL_TEAM_KEEPER 44
+
+/** @brief Offset in a team entry of its number of formations, see BTL_TEAM_FORMATIONS (byte) */
+#define BTL_TEAM_FORMATION_COUNT 47
+
+/**
+ * @brief Offset in a team entry of its formations, the home positions of its players
+ * @details Up to BTL_TEAM_FORMATION_MAX entries of BTL_TEAM_FORMATION_SIZE
+ * bytes, each holding two floats, x then z, per player of the team, in the
+ * order of its players.
+ */
+#define BTL_TEAM_FORMATIONS 52
+
+/** @brief Size of one formation, see BTL_TEAM_FORMATIONS */
+#define BTL_TEAM_FORMATION_SIZE 92
+
+/** @brief Maximum number of formations of a team */
+#define BTL_TEAM_FORMATION_MAX 10
+
+/**
+ * @brief Offset in a team entry of the roles of its players
+ * @details BTL_TEAM_ROLE_SIZE bytes per player, in the order of its players: the
+ * role at 0 (16 bit, see BTL_ROLE_*), its flag at 2 (16 bit, see
+ * BTL_ROLE_FLAG_*) and an index at 4 (byte).
+ */
+#define BTL_TEAM_ROLES 972
+
+/** @brief Size of the role of one player, see BTL_TEAM_ROLES */
+#define BTL_TEAM_ROLE_SIZE 6
+
+/** @brief Role of a goalkeeper */
+#define BTL_ROLE_KEEPER   1
+
+/** @brief Role of a defender, 2 and 3 both are */
+#define BTL_ROLE_DEFENDER 2
+
+/** @brief Role flag of a goalkeeper */
+#define BTL_ROLE_FLAG_KEEPER     0x10
+
+/** @brief Role flag of a defender */
+#define BTL_ROLE_FLAG_DEFENDER   0x20
+
+/** @brief Role flag of a midfielder, roles 4 to 6 */
+#define BTL_ROLE_FLAG_MIDFIELDER 0x40
+
+/** @brief Role flag of a forward, roles 7 and above */
+#define BTL_ROLE_FLAG_FORWARD    0x80
+
+/**
+ * @brief Offset of the "force win" list, filled by CMND_BTL_SET_FORCE_WIN
+ * @details BTL_FORCE_LIST_SIZE BtlForceEntry. A player listed here wins every
+ * duel, and a listed goalkeeper also closes his goal with a barrier the ball
+ * bounces off, see BTL_MATCH_GOAL_GUARD.
+ */
+#define BTL_MATCH_FORCE_WIN 152524
+
+/** @brief Offset of the "force lose" list, filled by CMND_BTL_SET_FORCE_LOSE, same layout */
+#define BTL_MATCH_FORCE_LOSE 152780
+
+/** @brief Number of entries of a force list */
+#define BTL_FORCE_LIST_SIZE 32
+
+/**
+ * @brief Offset of the two goal barrier flags, one byte per team (team 0 first)
+ * @details Recomputed every frame from the goalkeepers found in the force win list.
+ */
+#define BTL_MATCH_GOAL_GUARD 152516
+
+/**
+ * @brief One entry of a force list
+ * @details Empty when Team is -1 and Id is 0; the lookup stops at the first
+ * empty entry.
+ */
+typedef struct {
+    /** @brief CharaparamID hash when Team is -1, else the index of the player within Team */
+    uint32_t Id;
+
+    /** @brief Team of the player, or -1 to look it up by CharaparamID */
+    int16_t Team;
+
+    /** @brief Unknown, every writer of a script stores 0 */
+    uint16_t Unk6;
+} BtlForceEntry;
+
+/**
+ * @brief Offset of the battle view, the 3D scene drawn on the bottom screen
+ * @details Inside the display copy of the match that starts at match + 153564.
+ */
+#define BTL_MATCH_VIEW 153568
+
+/**
+ * @brief Offset of the collision world the ball bounces off, see btlAddWall
+ * @details Up to 32 entries of 88 bytes, their count is the word at 2816. The
+ * field setup fills it with the walls around a challenge field and the goal posts.
+ */
+#define BTL_MATCH_WALLS 149608
+
+/** @brief Index of the goal model of team 0 among the battle view objects, see btlViewObject */
+#define BTL_VIEW_GOAL_0 0
+
+/** @brief Index of the goal model of team 1 among the battle view objects */
+#define BTL_VIEW_GOAL_1 1
+
 /** @brief Offset in a player entry of its position, three floats */
 #define BTL_PLAYER_POSITION 0
 
 /** @brief Offset in a player entry of its CharaparamID hash, copied from BattlePlayer */
 #define BTL_PLAYER_PARAM_ID 340
+
+/**
+ * @brief Offset within a state buffer of the score, one byte per team
+ * @details Team 0 at this offset, team 1 right after it.
+ */
+#define BTL_STATE_SCORE 14792
+
+/**
+ * @brief Offset within a state buffer of the team that kicks off, 0 or 1 (byte)
+ * @details Picked again by the kickoff step of the match, see ie4BtlOnKickoff.
+ */
+#define BTL_STATE_KICKOFF_TEAM 14797
+
+/**
+ * @brief Offset in the field geometry of the kind of game being played (16 bit)
+ * @details 1 for a match, 2 for anything else. The challenge event table only
+ * reacts to the match events while this is BTL_FIELD_KIND_CHALLENGE.
+ */
+#define BTL_FIELD_KIND 100
+
+#define BTL_FIELD_KIND_MATCH     1
+#define BTL_FIELD_KIND_CHALLENGE 2
+
+/** @brief Offset in the field geometry of the victory condition, one of BTL_VICTORY_* (byte) */
+#define BTL_FIELD_VICTORY 102
+
+/**
+ * @brief Offset in the field geometry of the rule flags, see BTL_RULE_* (byte)
+ * @details Copied from the soccer_config entry of the match when it is set up.
+ */
+#define BTL_FIELD_RULES 103
+
+/** @brief Offset in the field geometry of the half width of a goal mouth, FieldGoalMouse_X (float) */
+#define BTL_FIELD_GOAL_MOUTH 84
+
+/** @brief Rule flag: the match is played in two halves, always set */
+#define BTL_RULE_TWO_HALVES 0x02
+
+/** @brief Rule flag: a draw at full time goes to a penalty shoot-out, after extra time if any */
+#define BTL_RULE_PENALTIES  0x04
+
+/** @brief Rule flag: a draw at full time goes to extra time */
+#define BTL_RULE_EXTRA_TIME 0x08
+
+/**
+ * @brief Victory conditions of a soccer_config entry
+ * @details The game only knows 0 to 4, the others are handled by this module.
+ * A challenge always ends as soon as either team meets the condition.
+ */
+/** @brief Regular match, decided by the score */
+#define BTL_VICTORY_NONE        0
+/** @brief Get the ball back; the other team kicks off */
+#define BTL_VICTORY_GET_BALL    1
+/** @brief Score a goal */
+#define BTL_VICTORY_SCORE       2
+/** @brief Keep the ball until the time runs out, which is always 5 */
+#define BTL_VICTORY_KEEP_BALL   3
+/** @brief Replaced at load by GET_BALL, SCORE or KEEP_BALL, 20%/60%/20% */
+#define BTL_VICTORY_RANDOM      4
+/** @brief Lead by two goals */
+#define BTL_VICTORY_LEAD_2      5
+/** @brief Lead by three goals */
+#define BTL_VICTORY_LEAD_3      6
+/** @brief Concede no goal until the time runs out; the other team kicks off and has no goal */
+#define BTL_VICTORY_CLEAN_SHEET 7
+
+/**
+ * @brief Match commands a challenge event handler can queue
+ * @details The handler writes one in the first byte of the slot it is given.
+ */
+/** @brief Ends the match, won by team 0 */
+#define BTL_COMMAND_WIN  1
+/** @brief Ends the match, won by team 1 */
+#define BTL_COMMAND_LOSE 2
+
+/**
+ * @brief Context handed to the handlers of the match event tables
+ * @details Built on the stack by the event dispatcher at 0x003BAA28 for every
+ * handler it calls.
+ */
+typedef struct {
+    /** @brief Match + 152444, its word at 16 is the battle script object */
+    int ScriptHolder;
+
+    /** @brief Match + 4, purpose not identified */
+    int Unk4;
+
+    /** @brief Match + 28, details of the event being raised */
+    int Event;
+
+    /** @brief The live state buffer of the match */
+    int State;
+
+    /** @brief The field geometry of the match, see BTL_MATCH_FIELD */
+    int Field;
+} BtlEventContext;
+
+/**
+ * @brief Flags of a SoccerInfo
+ */
+/** @brief A draw at full time goes to extra time (Unk3 of SOCCER_INFO) */
+#define SOCCER_INFO_EXTRA_TIME 0x01
+/** @brief A draw at full time goes to a penalty shoot-out (Unk4 of SOCCER_INFO) */
+#define SOCCER_INFO_PENALTIES  0x02
+
+/**
+ * @brief One SOCCER_INFO entry of data/res/soccer/soccer_config.cfg.bin, as the game keeps it
+ * @details Built by the row handler at 0x003A80FC and looked up by SoccerId.
+ * The cfg columns are, in order: SoccerId, TeamParamId, Mode, extra time
+ * (Unk3), penalties (Unk4), Bgm, VictoryCondition, ScriptId, Time, WinFlag
+ * (NextScript). The match loader copies Mode, VictoryCondition, Time and the
+ * flags into the match rules, and from there into the field geometry.
+ */
+typedef struct {
+    /** @brief CRC32 of "btl%04d" */
+    uint32_t SoccerId;
+
+    /** @brief TEAM_PARAM_INFO entry of the other team */
+    uint32_t TeamParamId;
+
+    /** @brief Music played during the match, "M_xx"; when empty, M_78 for a challenge and M_08 otherwise */
+    const char *Bgm;
+
+    /** @brief Script loaded for the match */
+    uint16_t ScriptId;
+
+    /**
+     * @brief Index of the CharaFlags unlockA flag raised when the match is won, 0 for none
+     * @details Set by 0x0040CFA0 along with the Unk5 flag of every player of the other team.
+     */
+    uint16_t WinFlag;
+
+    /** @brief 1 for a 5 vs 5 challenge, 2 for an 11 vs 11 match with 5 substitutes */
+    uint8_t Mode;
+
+    /** @brief One of BTL_VICTORY_* */
+    uint8_t VictoryCondition;
+
+    /**
+     * @brief Length of the game, scaled by 60 into frames
+     * @details 0 picks 45 for a match and 15 otherwise. Ignored by KEEP_BALL, which always uses 5.
+     */
+    uint8_t Time;
+
+    /** @brief SOCCER_INFO_* flags */
+    uint8_t Flags;
+} SoccerInfo;
 
 /**
  * @brief Type tags of a BtlScriptArg
@@ -235,6 +486,76 @@ int btlIsInPenaltyArea(const float* field, const void* position, float side, flo
  * @note Only called from the match update, which ie4BtlMatchStep hooks
  */
 uint32_t btlMatchStepUnk(int match);
+
+/**
+ * @brief Places the two goal models of the match
+ * @param view Battle view the models belong to
+ * @param field Field geometry of the match, the battle view keeps its own copy
+ * @details Called from 0x003AF838 when the battle view is set up. Shrinks both
+ * goals to nothing for BTL_VICTORY_GET_BALL and BTL_VICTORY_KEEP_BALL.
+ */
+void btlPlaceGoals(int view, const void* field);
+
+/**
+ * @brief Adds a flat rectangular wall to the collision world of the ball
+ * @param world Collision world, see BTL_MATCH_WALLS
+ * @param unk84 Unknown, stored at 84 in the entry; the field walls pass 1
+ * @param unk1 Unknown, stored at 1 in the entry; the field walls pass 3
+ * @param x X of one corner of the wall
+ * @param y Y of that corner
+ * @param z Z of that corner
+ * @param length Extent of the wall along dirX, dirY, dirZ
+ * @param height Extent of the wall along downX, downY, downZ
+ * @param dirX X of the unit vector the length runs along
+ * @param dirY Y of that vector
+ * @param dirZ Z of that vector
+ * @param downX X of the unit vector the height runs along
+ * @param downY Y of that vector
+ * @param downZ Z of that vector
+ * @param rebound Share of its speed the ball keeps when bouncing, the field walls use 0.8
+ * @return int Non-zero once added, 0 when the world is full
+ * @details The field setup at 0x003C9858 walls a challenge field in with it:
+ * both touchlines, then for BTL_VICTORY_SCORE only both sides of each goal
+ * mouth and the space above it, and for every other condition each goal line
+ * from one corner to the other, goal mouth included.
+ */
+int btlAddWall(int world, uint8_t unk84, uint8_t unk1, float x, float y, float z, float length, float height,
+    float dirX, float dirY, float dirZ, float downX, float downY, float downZ, float rebound);
+
+/**
+ * @brief Hides or shows the ball and its shadow on the bottom screen
+ * @param view Battle view, see BTL_MATCH_VIEW
+ * @param hidden Non-zero to hide them
+ * @details Only records the request, the view applies it on its next frame
+ * and keeps it until the next call. Shots hide the ball while they play on
+ * the top screen.
+ */
+void btlViewHideBall(int view, int hidden);
+
+/**
+ * @brief Freezes the ball and its shadow of the bottom screen as they are
+ * @param view Battle view, see BTL_MATCH_VIEW
+ * @param visible Passed on to the objects, but they ignore it once frozen
+ * @details Nothing unfreezes them before the match ends. The shot sequence
+ * calls it in a challenge only, once the ball has been hidden, since the
+ * game ends a challenge on its first goal.
+ */
+void btlViewLockBall(int view, int visible);
+
+/**
+ * @brief Retrieves a 3D object of the battle view
+ * @param view Battle view
+ * @param index Index of the object, e.g. BTL_VIEW_GOAL_0
+ * @return int The object, 0 if missing
+ */
+int btlViewObject(int view, uint32_t index);
+
+/**
+ * @brief Sets the scale of a battle view object
+ * @param object Object returned by btlViewObject
+ * @param scale Three floats, all at 0 to make it disappear
+ */
+void btlViewObjectSetScale(int object, const float* scale);
 
 /**
  * @brief Calls a function of a script object, without letting it suspend
