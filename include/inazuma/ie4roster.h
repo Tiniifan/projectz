@@ -275,19 +275,15 @@ uint32_t ie4OrderSectionWrite(OrderList *order, uint8_t *bufBase, uint32_t bufSi
 int ie4OrderRemoveEntry(OrderList *order, uint32_t index, int keep, int benchOnly);
 
 /**
- * @brief Set to 1 to have the save readers time themselves, 0 for a real build
- * @details Emulator only debugging aid. Each phase of a load is timed with
- * svcGetSystemTick and reported by reading an address that encodes the result,
- * `0x0T000000 | ticks >> 8`, T being the phase: 1 the whole player section, 2
- * its record decoding, 3 its stat building, 4 its equipment, move and avatar
- * refreshes, 5 the whole order section, 6 its appends, 7 its team remapping.
- * One unit is about a microsecond. Those addresses are unmapped, so Azahar logs
- * every one of them as `unmapped Read32 @ 0x0T......` and the load breaks down
- * by itself in the log.
- * @warning Never ship this enabled. On a console an unmapped read is a data
- * abort, not a log line.
+ * @brief Set to 1 to time save-reader phases; 0 keeps profiling disabled
+ * @details Emulator debugging aid. Each phase is timed with svcGetSystemTick
+ * and emitted as a bounded `<phase>:<8 hex digits>` string through the
+ * debug-string SVC (0x3D). Phases are: 1 the whole player section, 2 record
+ * decoding, 3 stat building, 4 equipment/move/avatar refresh,
+ * 5 the whole order section, 6 appends, and 7 team remapping. Keep disabled by
+ * default in production.
  */
-#define IE4_ROSTER_PROFILE 1
+#define IE4_ROSTER_PROFILE 0
 
 /**
  * @brief Holder of the character database the list builder filters against

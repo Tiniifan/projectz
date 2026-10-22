@@ -19,15 +19,21 @@ static inline uint32_t profTick(void) {
 }
 
 /**
- * @brief Reports one timing by touching an address that encodes it
+ * @brief Reports one timing through the emulator debug-string service
  * @param tag Phase, 1 to 7
  * @param ticks Ticks the phase took
  */
-static void profReport(uint32_t tag, uint32_t ticks) {
-    volatile uint32_t *probe;
+static __attribute__((noinline)) void profReport(uint32_t tag, uint32_t ticks) {
+    char message[16];
 
-    probe = (volatile uint32_t *)(((tag & 7) << 24) | ((ticks >> 8) & 0xFFFFFF));
-    (void)*probe;
+    safeSprintf(message, "%u:%08X", (unsigned int)(tag & 7), (unsigned int)ticks);
+
+    register const char *arg0 __asm__("r0") = message;
+    register int arg1 __asm__("r1") = sizeof("0:00000000") - 1;
+    __asm__ volatile("svc 0x3D"
+                     : "+r"(arg0), "+r"(arg1)
+                     :
+                     : "r2", "r3", "r12", "cc", "memory");
 }
 
 #define PROF_DECL(name) uint32_t name = 0
