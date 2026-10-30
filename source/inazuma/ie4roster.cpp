@@ -286,6 +286,15 @@ extern "C" int ie4PlayerStatValue(int record, int stat);
 extern "C" void *safeMalloc2(unsigned int size);
 
 /**
+ * @brief Reinitialises the session heap used by safeMalloc2
+ * @param base First byte of the new heap arena
+ * @param size Arena size in bytes
+ * @return int Original initialisation result
+ * @note Game function at 0x004F27DC, called at 0x004E1AD4 on session creation
+ */
+extern "C" int ie4ListHeapInitOriginal(uint32_t base, uint32_t size);
+
+/**
  * @brief Reads a little-endian 32 bit value from a possibly unaligned address
  * @param source First byte of the value
  * @return uint32_t The value
@@ -769,6 +778,21 @@ static int g_listView[IE4_LIST_POOL_SLOTS];
 
 /** @brief Pooled scratch buffers holding the entries of a PlayerListView */
 static uint8_t *g_listBuffer[IE4_LIST_POOL_SLOTS];
+
+__attribute__((optimize("no-tree-loop-distribute-patterns")))
+int ie4PlayerListHeapInit(uint32_t base, uint32_t size) {
+    // CMND_GOTO_TITLE recreates the session and its safeMalloc2 arena. These
+    // globals live in the injected image, so they outlive both the old views
+    // and their buffers. Forget BOTH before the arena is reused: even an equal
+    // view address or matching vtable does not validate an old heap allocation.
+    // Do not free the old buffers here; their whole arena is being discarded.
+    for (int i = 0; i < IE4_LIST_POOL_SLOTS; i++) {
+        g_listView[i] = 0;
+        g_listBuffer[i] = 0;
+    }
+
+    return ie4ListHeapInitOriginal(base, size);
+}
 
 /**
  * @brief Tells whether a view the pool still holds a buffer for is alive

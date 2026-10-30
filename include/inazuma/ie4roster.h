@@ -326,12 +326,24 @@ int ie4OrderRemoveEntry(OrderList *order, uint32_t index, int keep, int benchOnl
 /**
  * @brief Number of scratch buffers kept for PlayerListView entry storage
  * @details A menu holds at most two views at once and a submenu opened over it
- * adds two more, so anything above four is margin. Buffers are allocated on
- * first use and are only ever taken back from a view whose object has since
- * died, which ie4PlayerListBuild recognises by IE4_LIST_VIEW_VTABLE no longer
- * sitting at its `+0`.
+ * adds two more, so anything above four is margin. Within one session, buffers
+ * are allocated on first use and may be reassigned after their view dies.
+ * ie4PlayerListHeapInit invalidates all slots whenever the session heap is
+ * recreated, including on a return to the title screen.
  */
 #define IE4_LIST_POOL_SLOTS 12
+
+/**
+ * @brief Invalidates list storage before the game recreates its session heap
+ * @param base First byte of the new heap arena
+ * @param size Arena size in bytes
+ * @return int Result of the original heap initialiser at 0x004F27DC
+ * @details Replaces its BL call at 0x004E1AD4, then calls that original
+ * initialiser with the same arguments. The injected globals survive a return
+ * to the title screen, but safeMalloc2 allocations and menu objects do not.
+ * Clear owners and buffers together without dereferencing or freeing them.
+ */
+int ie4PlayerListHeapInit(uint32_t base, uint32_t size);
 
 /**
  * @brief Vtable every PlayerListView carries at its `+0`

@@ -325,6 +325,7 @@ ie4CharaBaseLookup = 0x493494;
 ie4CharaFind = 0x24F5F8;
 ie4CharaFindAlt = 0x24F8CC;
 ie4CharaLookup = 0x493AE4;
+ie4ListHeapInitOriginal = 0x4F27DC;
 ie4NameLookup = 0x490978;
 ie4OrderListAppend = 0x250684;
 ie4OrderListFind = 0x39BC10;

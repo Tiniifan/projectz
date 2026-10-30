@@ -238,6 +238,12 @@ IE4PlayerListSort:
     addr:   0x0038A6F8
     func:   ie4PlayerListSort
 
+IE4PlayerListHeapInit:
+    type:   branch
+    link:   true
+    addr:   0x004E1AD4
+    func:   ie4PlayerListHeapInit
+
 IE4PlayerPoolCapacity00:
     type:   patch
     addr:   0x005B2100
